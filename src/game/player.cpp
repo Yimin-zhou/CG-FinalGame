@@ -1,0 +1,124 @@
+#include "player.h"
+
+Player::Player(glm::vec3 startPosition, float playerSpeed) :
+	position(startPosition),
+	speed(playerSpeed),
+	model(),
+	m_front(glm::vec3(0.0f, 0.0f, 1.0f)),
+	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
+	m_up(glm::vec3(0.0f, 1.0f, 0.0f))
+{
+
+}
+
+Player::Player()
+{
+
+}
+
+void Player::MoveForward(float deltaTime)
+{
+	position.x += sin(glm::radians(m_yaw)) * speed * deltaTime;
+	position.z += cos(glm::radians(m_yaw)) * speed * deltaTime;
+}
+
+void Player::MoveBackward(float deltaTime)
+{
+	position.x -= sin(glm::radians(m_yaw)) * speed * deltaTime;
+	position.z -= cos(glm::radians(m_yaw)) * speed * deltaTime;
+}
+
+void Player::MoveLeft(float deltaTime)
+{
+	position.x -= -cos(glm::radians(m_yaw)) * speed * deltaTime;
+	position.z += -sin(glm::radians(m_yaw)) * speed * deltaTime;
+}
+
+void Player::MoveRight(float deltaTime)
+{
+	position.x += -cos(glm::radians(m_yaw)) * speed * deltaTime;
+	position.z -= -sin(glm::radians(m_yaw)) * speed * deltaTime;
+}
+
+void Player::RotateLeft(float deltaTime)
+{
+	m_yaw -= speed * deltaTime;
+}
+
+void Player::RotateRight(float deltaTime)
+{
+	m_yaw += speed * deltaTime;
+}
+
+float Player::GetYaw()
+{
+	return m_yaw;
+}
+
+void Player::SetYaw(float yaw)
+{
+	m_yaw = yaw;
+	updateFront();
+	updateLeft();
+	updateUp();
+}
+
+glm::vec3 Player::GetPlayerUp()
+{
+	return m_up;
+}
+
+glm::vec3 Player::GetPlayerFront()
+{
+	return m_front;
+}
+
+glm::vec3 Player::GetPlayerLeft()
+{
+	return m_left;
+}
+
+void Player::ProcessKeyboardInput(int key, float deltaTime)
+{
+	if (key == 87) 
+	{
+		MoveForward(deltaTime);
+	}
+	else if (key == 83) 
+	{
+		MoveBackward(deltaTime);
+	}
+	else if (key == 65) 
+	{
+		MoveLeft(deltaTime);
+	}
+	else if (key == 68) 
+	{
+		MoveRight(deltaTime);
+	}
+}
+
+glm::vec3 Player::GetPosition()
+{
+	return position;
+}
+
+void Player::updateFront()
+{
+	// move front with position
+	m_front = glm::vec3(0.0f, 0.0f, 1.0f);
+	m_front.x = sin(glm::radians(m_yaw));
+	m_front.z = cos(glm::radians(m_yaw));
+	m_front = glm::normalize(m_front);
+	m_front = glm::translate(glm::mat4(1.0), glm::vec3(position)) * glm::vec4(m_front, 1.0f);
+}
+
+void Player::updateLeft()
+{
+	m_left = glm::normalize(glm::cross(glm::vec3(0, 1, 0), m_front));
+}
+
+void Player::updateUp()
+{
+	m_up = glm::normalize(glm::cross(m_front, m_left));
+}
