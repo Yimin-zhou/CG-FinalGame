@@ -10,11 +10,11 @@ class Model
 public:
 	std::shared_ptr<XMaterial> material;
 
-	void SetMesh(std::string filePath);
+	void SetMesh(std::filesystem::path filePath);
 
 	void Render();
 
-	Model(const std::shared_ptr<XMaterial>& material);
+	Model(const std::shared_ptr<XMaterial>& material, const std::filesystem::path filePath);
 
 	Model();
 	~Model();

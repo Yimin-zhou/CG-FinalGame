@@ -65,6 +65,26 @@ float Camera::GetYaw()
 	return m_yaw;
 }
 
+float Camera::GetPitch()
+{
+	return m_pitch;
+}
+
+glm::vec3 Camera::GetFront()
+{
+	return m_front;
+}
+
+glm::vec3 Camera::GetUp()
+{
+	return m_up;
+}
+
+glm::vec3 Camera::GetRight()
+{
+	return m_right;
+}
+
 void Camera::ProcessKeyboardInput(/* ... */) 
 {
 	// Implement keyboard input handling to move the camera

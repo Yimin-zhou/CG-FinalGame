@@ -1,28 +1,25 @@
 #include "projectile.h"
 
-Projectile::Projectile(const glm::vec3& position, const glm::vec3& direction, float speed, float damage) : 
-	position(position), 
-	direction(direction), 
-	speed(speed), 
+Projectile::Projectile(const glm::vec3& position, const glm::vec3& direction, float speed, uint32_t damage, std::shared_ptr<Model> mod) :
+	position(position),
+	direction(direction),
+	speed(speed),
 	damage(damage),
-	model()
+	m_timeToLive(5.0f)
+{
+	model = mod;
+}
+
+Projectile::Projectile()
 {
 
 }
 
-Projectile::Projectile() :
-	position(glm::vec3(0)),
-	direction(glm::vec3(0)),
-	speed(0),
-	damage(0),
-	model()
-{
-
-}
-
-void Projectile::Update(float deltaTime)
+bool Projectile::Update(float deltaTime)
 {
 	position += direction * speed * deltaTime;
+	m_timeToLive -= deltaTime;
+	return (m_timeToLive <= 0.0f);
 }
 
 void Projectile::SetPosition(const glm::vec3& pos)
@@ -35,6 +32,16 @@ void Projectile::SetDirection(const glm::vec3& dir)
 	direction = dir;
 }
 
+void Projectile::SetSpeed(float sp)
+{
+	speed = sp;
+}
+
+void Projectile::SetDamage(uint32_t da)
+{
+	damage = da;
+}
+
 glm::vec3 Projectile::GetPosition() const
 {
 	return position;
@@ -43,10 +50,5 @@ glm::vec3 Projectile::GetPosition() const
 float Projectile::GetDamage() const
 {
 	return damage;
-}
-
-void Projectile::Activate()
-{
-	isActive = true;
 }
 

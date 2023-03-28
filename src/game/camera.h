@@ -23,7 +23,12 @@ public:
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetPerspectiveMatrix(Window& window);
 	glm::vec3 GetPosition();
+
 	float GetYaw();
+	float GetPitch();
+	glm::vec3 GetFront();
+	glm::vec3 GetUp();
+	glm::vec3 GetRight();
 
 	// Processes input received from any keyboard-like input system
 	void ProcessKeyboardInput(/* ... */);

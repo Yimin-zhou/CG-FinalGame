@@ -45,6 +45,8 @@ public:
 	void onMouseClicked(int button, int mods);
 	void onMouseReleased(int button, int mods);
 
+	void DebugWindows();
+
 	Application();
 
 private:
@@ -52,7 +54,9 @@ private:
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
 
-	std::shared_ptr<Projectile> m_projectile;
+	std::vector<std::shared_ptr<Projectile>> m_projectiles;
+	std::shared_ptr<Model> m_projectileModel;
+	std::shared_ptr<Model> m_enemyModel;
 	std::vector<std::shared_ptr<Enemy>> m_enemies;
 
 	// std::shared_ptr<Level> m_level;

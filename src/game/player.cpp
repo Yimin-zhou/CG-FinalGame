@@ -3,10 +3,14 @@
 Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	position(startPosition),
 	speed(playerSpeed),
+	health(100),
+	shootingInterval(0.2f),
+	shootingTimer(0.0f),
 	model(),
 	m_front(glm::vec3(0.0f, 0.0f, 1.0f)),
 	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
-	m_up(glm::vec3(0.0f, 1.0f, 0.0f))
+	m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
+	m_yaw(0.0f)
 {
 
 }
@@ -14,6 +18,11 @@ Player::Player(glm::vec3 startPosition, float playerSpeed) :
 Player::Player()
 {
 
+}
+
+void Player::Update(float deltaTime)
+{
+	SetShootingTimer(deltaTime);
 }
 
 void Player::MoveForward(float deltaTime)
@@ -55,12 +64,22 @@ float Player::GetYaw()
 	return m_yaw;
 }
 
+uint32_t Player::GetHealth()
+{
+	return health;
+}
+
 void Player::SetYaw(float yaw)
 {
 	m_yaw = yaw;
 	updateFront();
 	updateLeft();
 	updateUp();
+}
+
+void Player::SetShootingTimer(float deltaTime)
+{
+	shootingTimer -= deltaTime;
 }
 
 glm::vec3 Player::GetPlayerUp()
@@ -110,7 +129,6 @@ void Player::updateFront()
 	m_front.x = sin(glm::radians(m_yaw));
 	m_front.z = cos(glm::radians(m_yaw));
 	m_front = glm::normalize(m_front);
-	m_front = glm::translate(glm::mat4(1.0), glm::vec3(position)) * glm::vec4(m_front, 1.0f);
 }
 
 void Player::updateLeft()

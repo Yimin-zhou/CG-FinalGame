@@ -1,6 +1,6 @@
 #include "enemy.h"
 
-Enemy::Enemy(const glm::vec3& pos, float sp, float hp) : 
+Enemy::Enemy(const glm::vec3& pos, float sp, uint32_t hp) :
 	position(pos), 
 	speed(sp), 
 	health(hp),
@@ -31,6 +31,20 @@ void Enemy::TakeDamage(float damage)
 bool Enemy::IsAlive() const
 {
 	return !isDead;
+}
+
+bool Enemy::CheckCollision(glm::vec3 projectilePos)
+{
+	glm::vec3 delta = projectilePos - position;
+	float distance = glm::length(delta);
+	float radiusSum = 2.0f + 1.0f;
+
+	return distance < radiusSum;
+}
+
+uint32_t Enemy::GetHealth() const
+{
+	return health;
 }
 
 glm::vec3 Enemy::GetPosition() const

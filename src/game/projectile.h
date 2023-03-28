@@ -12,25 +12,22 @@ public:
 	glm::vec3 position;
 	glm::vec3 direction;
 	float speed;
-	float damage;
+	uint32_t damage;
 	std::shared_ptr<Model> model;
 
-	bool isActive = false;
-
-
-	Projectile(const glm::vec3& position, const glm::vec3& direction, float speed, float damage);
+	Projectile(const glm::vec3& position, const glm::vec3& direction, float speed, uint32_t damage, std::shared_ptr<Model> mod);
 	Projectile();
 
-	void Update(float deltaTime);
+	bool Update(float deltaTime);
 
 	void SetPosition(const glm::vec3& position);
 	void SetDirection(const glm::vec3& direction);
+	void SetSpeed(float speed);
+	void SetDamage(uint32_t damage);
 
 	glm::vec3 GetPosition() const;
-
 	float GetDamage() const;
 
-	void Activate();
-
 private:
+	float m_timeToLive;
 };
