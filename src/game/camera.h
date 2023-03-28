@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <framework/window.h>
 
 #include "player.h"
 
@@ -20,7 +21,7 @@ public:
 
 	// Returns the view matrix calculated using the Euler angles and the lookAt matrix
 	glm::mat4 GetViewMatrix();
-	glm::mat4 GetPerspectiveMatrix();
+	glm::mat4 GetPerspectiveMatrix(Window& window);
 	glm::vec3 GetPosition();
 	float GetYaw();
 
@@ -49,6 +50,8 @@ private:
 	// Camera options
 	float m_mouseSensitivity = 0.4f;
 	float m_zoom;
+	float m_near = 0.1f;
+	float m_far = 100.0f;
 
 	// Calculates the front vector from the camera's updated Euler angles
 	void updateCameraVectors();

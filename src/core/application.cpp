@@ -40,18 +40,27 @@ void Application::Init()
 	std::shared_ptr<XMaterial> defaultMaterial = std::make_shared<XMaterial>();
 	// create models
 	std::shared_ptr<Model> model_1 = std::make_shared<Model>(defaultMaterial);
-	std::shared_ptr<Model> model_2 = std::make_shared<Model>(defaultMaterial);
-	model_1->SetMesh("resources/dragon.obj");
+	model_1->SetMesh("resources/room.obj");
 	// create environment
 	std::vector<std::shared_ptr<Model>> models;
 	models.push_back(model_1);
-	models.push_back(model_2);
 	m_environment = std::make_shared<Environment>(models);
 
 	// create player
-	m_player = std::make_shared<Player>(glm::vec3(0, 0, 0), 5.0f);
+	m_player = std::make_shared<Player>(glm::vec3(0, 0, 0), 7.0f);
 	m_player->model = std::make_shared<Model>(defaultMaterial);
 	m_player->model->SetMesh("resources/player.obj");
+
+	// create enemies
+	std::shared_ptr<Enemy> enemy_1 = std::make_shared<Enemy>(glm::vec3(0, 0, 0), 1.0f, 3);
+	enemy_1->model = std::make_shared<Model>(defaultMaterial);
+	enemy_1->model->SetMesh("resources/enemy.obj");
+	m_enemies.push_back(enemy_1);
+
+	// init projectile
+	m_projectile = std::make_shared<Projectile>(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), 0.2f, 2.0f);
+	m_projectile->model = std::make_shared<Model>(defaultMaterial);
+	m_projectile->model->SetMesh("resources/projectile.obj");
 
 	// // create level
 	// std::vector<std::shared_ptr<Environment>> environments;
@@ -78,6 +87,19 @@ void Application::OnUpdate()
 		// Update the camera's position and orientation based on the player's position
 		m_playerCam->FollowPlayer(m_player);
 
+		// update enemies
+		for (auto& e : m_enemies)
+		{
+			e->Update(deltaTime, m_player->GetPosition());
+		}
+
+		// update projectile
+		if (m_projectile->isActive)
+		{
+			// update projectile
+			m_projectile->Update(deltaTime);
+		}
+
 		// render scene
 		Render();
 		lastFrameTime = currentTime;
@@ -97,7 +119,7 @@ void Application::Render()
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 
 	glm::mat4 view = m_playerCam->GetViewMatrix();
-	glm::mat4 proj = glm::perspective(glm::radians(80.0f), (float)m_window.getWindowSize().x / (float)m_window.getWindowSize().y, 0.1f, 1000.0f);
+	glm::mat4 proj = m_playerCam->GetPerspectiveMatrix(m_window);
 	
 	//std::cout << m_player->GetPosition().x << " " << m_player->GetPosition().y << " " << m_player->GetPosition().z << std::endl;
 
@@ -115,6 +137,27 @@ void Application::Render()
 		m->material->SetMatrix(glm::translate(glm::mat4(1), glm::vec3(i)), view, proj);
 		m->Render();
 		i++;
+	}
+
+
+	// render enemies
+	for (auto& e : m_enemies)
+	{
+		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+		e->model->material->SetMatrix(modelMat, view, proj);
+		e->model->Render();
+	}
+
+	// update projectile
+	if (m_projectile->isActive)
+	{
+		// update projectile
+		m_projectile->Update(deltaTime);
+
+		// render projectile
+		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_projectile->GetPosition()));
+		m_projectile->model->material->SetMatrix(modelMat, view, proj);
+		m_projectile->model->Render();
 	}
 
 	// imgui debug window
@@ -218,7 +261,12 @@ void Application::onMouseScroll(const glm::dvec2& cursorPos)
 // buttons pressed
 void Application::onMouseClicked(int button, int mods) 
 {
-	std::cout << "Pressed mouse button: " << button << std::endl;
+	// activate one projectile
+	m_projectile->SetPosition(glm::vec3(m_player->GetPosition().x, m_player->GetPosition().y + 1.0f, m_player->GetPosition().z));
+	m_projectile->SetDirection(m_player->GetPlayerFront());
+	m_projectile->Activate();
+
+	std::cout << "Clicked mouse button: " << button << std::endl;
 }
 
 // If one of the mouse buttons is released this function will be called

@@ -24,6 +24,8 @@ DISABLE_WARNINGS_POP()
 #include "game/level.h"
 #include "game/player.h"
 #include "game/camera.h"
+#include "game/enemy.h"
+#include "game/projectile.h"
 
 class Application
 {
@@ -49,6 +51,9 @@ private:
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
+
+	std::shared_ptr<Projectile> m_projectile;
+	std::vector<std::shared_ptr<Enemy>> m_enemies;
 
 	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
