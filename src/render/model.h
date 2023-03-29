@@ -14,11 +14,13 @@ public:
 
 	void Render();
 
-	Model(const std::shared_ptr<XMaterial>& material, const std::filesystem::path filePath);
+	Model(const std::shared_ptr<XMaterial>& mater, const std::filesystem::path filePath);
 
 	Model();
 	~Model();
 
 private:
 	GPUMesh m_mesh;
+	Texture m_texture;
+	ShaderBuilder m_shaderBuilder;
 };

@@ -29,6 +29,10 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	m_position.z = followPosition.z + offsetZ;
 	m_position.y = followPosition.y + offsetY + 4.0f; // yoffset
 
+	// Constrain the camera's position to the ground
+	if (m_position.y <= 0.2f) m_position.y = 0.2f;
+	
+
 	// Update the camera's orientation to look at the player's position
 	m_front = glm::normalize(followPosition - m_position);
 	m_right = glm::normalize(glm::cross(m_front, m_worldUp));

@@ -69,6 +69,23 @@ std::vector<Mesh> loadMesh(const std::filesystem::path& file, bool centerAndNorm
         throw std::exception();
     }
 
+    // PBR extension
+    // http://exocortex.com/blog/extending_wavefront_mtl_to_support_pbr
+    // https://en.wikipedia.org/wiki/Wavefront_.obj_file
+    //real_t roughness; // [0, 1] default 0
+    //real_t metallic; // [0, 1] default 0
+    //real_t sheen; // [0, 1] default 0
+    //real_t clearcoat_thickness; // [0, 1] default 0
+    //real_t clearcoat_roughness; // [0, 1] default 0
+    //real_t anisotropy; // aniso. [0, 1] default 0
+    //real_t anisotropy_rotation; // anisor. [0, 1] default 0
+    //real_t pad0;
+    //std::string roughness_texname; // map_Pr
+    //std::string metallic_texname; // map_Pm
+    //std::string sheen_texname; // map_Ps
+    //std::string emissive_texname; // map_Ke
+    //std::string normal_texname; // norm. For normal mapping.
+
     std::vector<Mesh> out;
     for (const auto& shape : inShapes) {
         assert(shape.mesh.indices.size() % 3 == 0);
@@ -129,7 +146,7 @@ std::vector<Mesh> loadMesh(const std::filesystem::path& file, bool centerAndNorm
                 const auto& objMaterial = inMaterials[materialID];
                 mesh.material.kd = construct_vec3(objMaterial.diffuse);
                 if (!objMaterial.diffuse_texname.empty()) {
-                    mesh.material.kdTexture = Image(baseDir / objMaterial.diffuse_texname);
+                    mesh.material.kdTexture = Image(baseDir / objMaterial.diffuse_texname, true);
                 }
                 mesh.material.ks = construct_vec3(objMaterial.specular);
                 mesh.material.shininess = objMaterial.shininess;

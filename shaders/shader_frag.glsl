@@ -1,5 +1,5 @@
 #version 450
-layout(location = 4) uniform sampler2D diffuseMap;
+layout(location = 4) uniform sampler2D albedoMap;
 
 in vec3 fragPosition;
 in vec3 fragNormal;
@@ -15,6 +15,6 @@ void main()
 
     // half lambert shading
     const float lambert = max(dot(normal, lightDirection), 0.0) * 0.8 + 0.3;
-    const vec3 diffuse = texture(diffuseMap, fragTexCoord).rgb * 3;
+    const vec3 diffuse = texture(albedoMap, fragTexCoord).rgb * 3;
 	fragColor = vec4(diffuse * lambert, 1.0);
 }

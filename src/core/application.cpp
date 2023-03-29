@@ -29,7 +29,6 @@ void Application::Init()
 {
 	// set window as full screen but not borderless
 	m_window.setBorderedFullScreen();
-	
 	// set mouse mode
 	m_window.setMouseCapture(true);
 
@@ -37,13 +36,19 @@ void Application::Init()
 	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
 	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
 
-	// create material
+	// create materials
 	std::shared_ptr<XMaterial> defaultMaterial = std::make_shared<XMaterial>();
+	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
+	statuePbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
+	statuePbrMaterial->SetAlbedo("resources/statue/albedo.jpg", true);
+
 	// create models
 	std::shared_ptr<Model> model_1 = std::make_shared<Model>(defaultMaterial, "resources/room.obj");
+	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
 	// create environment
 	std::vector<std::shared_ptr<Model>> models;
 	models.push_back(model_1);
+	models.push_back(model_statue);
 	m_environment = std::make_shared<Environment>(models);
 
 	// create player
