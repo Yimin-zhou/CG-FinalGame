@@ -22,6 +22,8 @@ public:
 	Window(std::string_view title, const glm::ivec2& windowSize, OpenGLVersion glVersion);
 	~Window();
 
+	bool isMouseCaptured = false;
+
 	void close(); // Set shouldClose() to true.
 	[[nodiscard]] bool shouldClose(); // Whether window should close (close() was called or user clicked the close button).
 

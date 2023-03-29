@@ -27,7 +27,7 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	float offsetY = -m_distanceFromPlayer * sin(glm::radians(m_pitch));
 	m_position.x = followPosition.x + offsetX;
 	m_position.z = followPosition.z + offsetZ;
-	m_position.y = followPosition.y + offsetY + 3.0f; // yoffset
+	m_position.y = followPosition.y + offsetY + 4.0f; // yoffset
 
 	// Update the camera's orientation to look at the player's position
 	m_front = glm::normalize(followPosition - m_position);
@@ -47,12 +47,12 @@ void Camera::Zoom(float offset)
 
 glm::mat4 Camera::GetViewMatrix() 
 {
-	return glm::lookAt(m_position, m_position + m_front + m_up * 0.1f, m_up);
+	return glm::lookAt(m_position, m_position + m_front + m_up * 0.5f, m_up);
 }
 
-glm::mat4 Camera::GetPerspectiveMatrix() 
+glm::mat4 Camera::GetPerspectiveMatrix(Window& window)
 {
-	return glm::perspective(glm::radians(80.0f), 16.0f/9.0f, 0.1f, 3000.0f);
+	return glm::perspective(glm::radians(80.0f), (float)window.getWindowSize().x / (float)window.getWindowSize().y, m_near, m_far);
 }
 
 glm::vec3 Camera::GetPosition()
@@ -63,6 +63,26 @@ glm::vec3 Camera::GetPosition()
 float Camera::GetYaw()
 {
 	return m_yaw;
+}
+
+float Camera::GetPitch()
+{
+	return m_pitch;
+}
+
+glm::vec3 Camera::GetFront()
+{
+	return m_front;
+}
+
+glm::vec3 Camera::GetUp()
+{
+	return m_up;
+}
+
+glm::vec3 Camera::GetRight()
+{
+	return m_right;
 }
 
 void Camera::ProcessKeyboardInput(/* ... */) 

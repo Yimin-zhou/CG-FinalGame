@@ -356,8 +356,10 @@ void Window::setMouseCapture(bool capture)
 {
     if (capture) {
         glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        isMouseCaptured = true;
     } else {
         glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        isMouseCaptured = false;
     }
 
     glfwPollEvents();

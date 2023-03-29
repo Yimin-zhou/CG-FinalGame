@@ -13,9 +13,15 @@ public:
 	std::shared_ptr<Model> model;
 	glm::vec3 position;
 	float speed;
+	uint32_t health;
+
+	float shootingInterval;
+	float shootingTimer;
 
 	Player(glm::vec3 startPosition, float playerSpeed);
 	Player();
+
+	void Update(float deltaTime);
 
 	void MoveForward(float deltaTime);
 
@@ -31,7 +37,10 @@ public:
 
 	float GetYaw();
 
+	uint32_t GetHealth();
+
 	void SetYaw(float yaw);
+	void SetShootingTimer(float deltaTime);
 
 	glm::vec3 GetPlayerUp();
 	glm::vec3 GetPlayerFront();
