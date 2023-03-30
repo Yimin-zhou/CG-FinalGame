@@ -11,6 +11,7 @@ public:
 	std::shared_ptr<XMaterial> material;
 	GPUMesh mesh;
 
+	void InitTextures();
 	void SetMesh(std::filesystem::path filePath);
 
 	void Render();
