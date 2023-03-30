@@ -26,6 +26,7 @@ DISABLE_WARNINGS_POP()
 #include "game/camera.h"
 #include "game/enemy.h"
 #include "game/projectile.h"
+#include "game/animatedModel.h"
 
 class Application
 {
@@ -44,6 +45,7 @@ public:
 	void onMouseScroll(const glm::dvec2& cursorPos);
 	void onMouseClicked(int button, int mods);
 	void onMouseReleased(int button, int mods);
+	const std::vector<std::string> loadFramePaths(const std::string& folderPath);
 
 	void DebugWindows();
 
@@ -53,6 +55,8 @@ private:
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
+	
+	std::shared_ptr<AnimatedModel> m_animatedModel;
 
 	std::vector<std::shared_ptr<Projectile>> m_projectiles;
 	std::shared_ptr<Model> m_projectileModel;
