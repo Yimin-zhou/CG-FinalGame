@@ -210,19 +210,24 @@ void Application::onKeyPressed(int key, int mods)
 
 	switch (key)
 	{
+		case GLFW_KEY_C: {
+			//Press C to swich camera angle
+			m_playerCam->SwitchCameraMode();
+			break;
+		}
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
 		case GLFW_KEY_F1:
 			m_window.setMouseCapture(true);
 		case GLFW_KEY_F2:
 			m_window.setMouseCapture(false);
-		case GLFW_KEY_F3:
+		case GLFW_KEY_F3: {
 			// spawn new enemy at random position, random position between -20 and 20
 			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
 			m_enemies.push_back(enemy);
+		}
 	}
-		
 }
 
 void Application::onKeyReleased(int key, int mods) 
