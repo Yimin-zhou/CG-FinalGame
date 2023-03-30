@@ -26,9 +26,16 @@ void Model::SetMesh(std::filesystem::path filePath)
 	mesh = GPUMesh(filePath);
 }
 
-void Model::Render()
+void Model::Render(glm::vec3 lightPos, glm::vec3 camPos)
 {
 	material->Apply();
+	material->SetUniform("roughnessMultiplier", 1.0f);
+	material->SetUniform("baseColor", glm::vec3(1));
+	material->SetUniform("lightColor", glm::vec3(0.2, 0.2, 1.0));
+	material->SetUniform("emissiveColor", glm::vec3(1.0, 0.2, 0.2));
+	material->SetUniform("cameraPos", camPos);
+	material->SetUniform("lightPos", lightPos);
+
 	mesh.draw();
 }
 

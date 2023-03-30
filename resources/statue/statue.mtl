@@ -2,12 +2,12 @@
 # www.blender.org
 
 newmtl statue
-Ka 1.000000 1.000000 1.000000
-Ks 0.500000 0.500000 0.500000
+Ka 0.567273 0.567273 0.567273
+Ks 0.550909 0.550909 0.550909
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
-illum 2
-map_Kd albedo.jpg
-map_Ns roughness.jpg
-map_Bump -bm 1.000000 normal.jpg
+illum 3
+map_Kd albedo.png
+map_Ns rmaMap.png
+map_Bump -bm 1.000000 normalEmMap.png

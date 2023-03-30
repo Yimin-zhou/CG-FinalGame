@@ -46,6 +46,11 @@ void XMaterial::SetUniform(const std::string& name, const glm::vec4& value)
 	m_shader.SetUniform(name, value);
 }
 
+void XMaterial::SetUniform(const std::string& name, const glm::mat3& value)
+{
+	m_shader.SetUniform(name, value);
+}
+
 void XMaterial::SetUniform(const std::string& name, const glm::mat4& value)
 {
 	m_shader.SetUniform(name, value);
@@ -82,6 +87,7 @@ void XMaterial::SetShader(std::filesystem::path vertFilePath, std::filesystem::p
 void XMaterial::SetMatrix(const glm::mat4& model, const glm::mat4& view, const glm::mat4& proj)
 {
 	m_modelMat = model;
+	m_normalModelMatrix = glm::inverseTranspose(glm::mat3(m_modelMat));
 	m_viewMat = view;
 	m_projMat = proj;
 }
@@ -111,6 +117,7 @@ void XMaterial::Apply()
 	SetUniform("model", m_modelMat);
 	SetUniform("view", m_viewMat);
 	SetUniform("projection", m_projMat);
+	SetUniform("normalModelMatrix", normalModelMatrix);
 	if (m_albedo != nullptr)
 	{
 		m_albedo->bind(GL_TEXTURE0);
@@ -135,6 +142,7 @@ XMaterial::XMaterial() :
 	m_viewMat(glm::lookAt(glm::vec3(-1, 1, -1), glm::vec3(0), glm::vec3(0, 1, 0))),
 	m_projMat(glm::perspective(glm::radians(80.0f), 1.0f, 0.1f, 3000.0f))
 {
+	m_normalModelMatrix = glm::inverseTranspose(glm::mat3(m_modelMat));
 	// default shader & texture
 	ShaderBuilder defaultBuilder;
 	defaultBuilder.addStage(GL_VERTEX_SHADER,"shaders/shader_vert.glsl");
@@ -149,6 +157,7 @@ XMaterial::XMaterial(glm::mat4 m_modelMat, glm::mat4 m_viewMat, glm::mat4 m_proj
 	m_viewMat(m_viewMat),
 	m_projMat(m_projMat)
 {
+	m_normalModelMatrix = glm::inverseTranspose(glm::mat3(m_modelMat));
 	// default shader & texture
 	ShaderBuilder defaultBuilder;
 	defaultBuilder.addStage(GL_VERTEX_SHADER,"shaders/shader_vert.glsl");

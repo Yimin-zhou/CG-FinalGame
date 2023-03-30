@@ -21,7 +21,7 @@ DISABLE_WARNINGS_POP()
 
 #pragma once
 
-#include "game/level.h"
+#include "render/environment.h"
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"

@@ -37,12 +37,18 @@ void Application::Init()
 	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
 
 	// create materials
-	std::shared_ptr<XMaterial> defaultMaterial = std::make_shared<XMaterial>();
 	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
 	statuePbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
 
+	std::shared_ptr<XMaterial> playerPbrMaterial = std::make_shared<XMaterial>();
+	playerPbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
+
+
+	std::shared_ptr<XMaterial> enemyPbrMaterial = std::make_shared<XMaterial>();
+	enemyPbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
+
 	// create models
-	std::shared_ptr<Model> model_room = std::make_shared<Model>(defaultMaterial, "resources/room.obj");
+	std::shared_ptr<Model> model_room = std::make_shared<Model>(statuePbrMaterial, "resources/room.obj");
 	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
 
 	// create environment, contains static objects
@@ -53,16 +59,16 @@ void Application::Init()
 
 	// create player
 	m_player = std::make_shared<Player>(glm::vec3(0, 0, 0), 7.0f);
-	m_player->model = std::make_shared<Model>(defaultMaterial, "resources/player.obj");
+	m_player->model = std::make_shared<Model>(playerPbrMaterial, "resources/player/player.obj");
 
 	// create enemies
-	m_enemyModel = std::make_shared<Model>(defaultMaterial, "resources/enemy.obj");
+	m_enemyModel = std::make_shared<Model>(enemyPbrMaterial, "resources/enemy/enemy.obj");
 	std::shared_ptr<Enemy> enemy_1 = std::make_shared<Enemy>(glm::vec3(0, 0, 0), 1.0f, 4);
 	enemy_1->model = m_enemyModel;
 	m_enemies.push_back(enemy_1);
 
 	// init projectile model
-	m_projectileModel = std::make_shared<Model>(defaultMaterial, "resources/projectile.obj");
+	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
 }
 
 void Application::OnUpdate() 
@@ -141,13 +147,13 @@ void Application::Render()
 	glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 	modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 	m_player->model->material->SetMatrix(modelMat, view, proj);
-	m_player->model->Render();
+	m_player->model->Render({0,4,0}, m_playerCam->GetPosition());
 
 	// render objects
 	for (auto& m : m_environment->models)
 	{
 		m->material->SetMatrix(glm::mat4(1), view, proj);
-		m->Render();
+		m->Render({ 0,4,0 }, m_playerCam->GetPosition());
 	}
 
 	// render enemies
@@ -156,7 +162,7 @@ void Application::Render()
 		if (!e->IsAlive()) continue;
 		glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 		e->model->material->SetMatrix(modelMat_enemy, view, proj);
-		e->model->Render();
+		e->model->Render({ 0,4,0 }, m_playerCam->GetPosition());
 	}
 
 	// render projectiles
@@ -165,7 +171,7 @@ void Application::Render()
 		// render projectile
 		glm::mat4 modelMat_projectile = glm::translate(glm::mat4(1), glm::vec3(p->GetPosition()));
 		p->model->material->SetMatrix(modelMat_projectile, view, proj);
-		p->model->Render();
+		p->model->Render({ 0,4,0 }, m_playerCam->GetPosition());
 	}
 
 
@@ -206,7 +212,7 @@ void Application::ProcessContinousInput()
 
 		m_player->shootingTimer = m_player->shootingInterval;
 
-		std::cout << "Shoot" << std::endl;
+		//std::cout << "Shoot" << std::endl;
 	}
 }
 
