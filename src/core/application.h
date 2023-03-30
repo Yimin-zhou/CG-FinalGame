@@ -22,6 +22,9 @@ DISABLE_WARNINGS_POP()
 #pragma once
 
 #include "render/environment.h"
+#include "render/light/directionalLight.h"
+#include "render/light/pointLight.h"
+#include "render/light/spotLight.h"
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
@@ -61,4 +64,7 @@ private:
 
 	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
+	std::shared_ptr<DirectionalLight> m_directionalLight;
+	std::vector<std::shared_ptr<PointLight>> m_pointLights;
+	std::vector<std::shared_ptr<SpotLight>> m_spotLights;
 };

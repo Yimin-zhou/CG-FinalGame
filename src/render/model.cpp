@@ -26,7 +26,10 @@ void Model::SetMesh(std::filesystem::path filePath)
 	mesh = GPUMesh(filePath);
 }
 
-void Model::Render(glm::vec3 lightPos, glm::vec3 camPos)
+void Model::Render(std::shared_ptr<DirectionalLight> dirLight, 
+	std::vector<std::shared_ptr<PointLight>>& pointLights,
+	std::vector<std::shared_ptr<SpotLight>>& spotLights,
+	const glm::vec3& camPos)
 {
 	material->Apply();
 	material->SetUniform("roughnessMultiplier", 1.0f);
@@ -34,7 +37,42 @@ void Model::Render(glm::vec3 lightPos, glm::vec3 camPos)
 	material->SetUniform("lightColor", glm::vec3(0.2, 0.2, 1.0));
 	material->SetUniform("emissiveColor", glm::vec3(1.0, 0.2, 0.2));
 	material->SetUniform("cameraPos", camPos);
-	material->SetUniform("lightPos", lightPos);
+
+	// set up directional light
+	material->SetUniform("directionalLight.direction", dirLight->getDirection());
+	material->SetUniform("directionalLight.color", dirLight->getColor());
+	material->SetUniform("directionalLight.intensity", dirLight->getIntensity());
+
+	// set up point light
+	uint16_t index = 0;
+	for(auto& light : pointLights)
+	{
+		std::string prefix = "pointLights[" + std::to_string(index) + "].";
+		material->SetUniform(prefix + "position", light->getPosition());
+		material->SetUniform(prefix + "color", light->getColor());
+		material->SetUniform(prefix + "intensity", light->getIntensity());
+		material->SetUniform(prefix + "constant", light->getConstant());
+		material->SetUniform(prefix + "linear", light->getLinear());
+		material->SetUniform(prefix + "quadratic", light->getQuadratic());
+		++index;
+	}
+
+	// set up spot light
+	index = 0;
+	for (auto& light : spotLights)
+	{
+		std::string prefix = "spotLights[" + std::to_string(index) + "].";
+		material->SetUniform(prefix + "position", light->getPosition());
+		material->SetUniform(prefix + "direction", light->getDirection());
+		material->SetUniform(prefix + "color", light->getColor());
+		material->SetUniform(prefix + "intensity", light->getIntensity());
+		material->SetUniform(prefix + "constant", light->getConstant());
+		material->SetUniform(prefix + "linear", light->getLinear());
+		material->SetUniform(prefix + "quadratic", light->getQuadratic());
+		material->SetUniform(prefix + "innerCutoff", light->getInnerCutoff());
+		material->SetUniform(prefix + "outerCutoff", light->getOuterCutoff());
+		++index;
+	}
 
 	mesh.draw();
 }

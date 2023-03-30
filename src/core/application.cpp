@@ -36,13 +36,45 @@ void Application::Init()
 	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
 	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
 
+	// setup lights
+	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(0.0f, 1.0f, 0.8f), glm::vec3(1.0f), 1.0f);
+	// point light
+	std::shared_ptr<PointLight> pointLight_1 = std::make_shared<PointLight>(glm::vec3(-10.0f, 2.0f, -10.0f), 
+		glm::vec3(1.0f, 0.3f, 0.3f), 3.0f, 1.0f, 0.09f, 0.032f);
+	std::shared_ptr<PointLight> pointLight_2 = std::make_shared<PointLight>(glm::vec3(10.0f, 2.0f, 10.0f), 
+		glm::vec3(0.3f, 1.0f, 0.3f), 3.0f, 1.0f, 0.09f, 0.032f);
+	std::shared_ptr<PointLight> pointLight_3 = std::make_shared<PointLight>(glm::vec3(10.0f, 2.0f, -10.0f),
+		glm::vec3(0.95f, 0.9f, 0.2f), 3.0f, 1.0f, 0.09f, 0.032f);
+	std::shared_ptr<PointLight> pointLight_4 = std::make_shared<PointLight>(glm::vec3(-10.0f, 2.0f, 10.0f),
+		glm::vec3(0.1f, 0.8f, 0.9f), 3.0f, 1.0f, 0.09f, 0.032f);
+	m_pointLights.push_back(pointLight_1);
+	m_pointLights.push_back(pointLight_2);
+	m_pointLights.push_back(pointLight_3);
+	m_pointLights.push_back(pointLight_4);
+	// spot light
+	std::shared_ptr<SpotLight> spotLight_1 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, -20.0f),
+				glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 5.0f, 1.0f, 0.09f, 0.032f,
+		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
+	std::shared_ptr<SpotLight> spotLight_2 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, 20.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 5.0f, 1.0f, 0.09f, 0.032f,
+		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
+	std::shared_ptr<SpotLight> spotLight_3 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, -20.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.95f, 0.9f, 0.2f), 5.0f, 1.0f, 0.09f, 0.032f,
+		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
+	std::shared_ptr<SpotLight> spotLight_4 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, 20.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.95f, 0.9f, 0.2f), 5.0f, 1.0f, 0.09f, 0.032f,
+		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
+	m_spotLights.push_back(spotLight_1);
+	m_spotLights.push_back(spotLight_2);
+	m_spotLights.push_back(spotLight_3);
+	m_spotLights.push_back(spotLight_4);
+
 	// create materials
 	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
 	statuePbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
 
 	std::shared_ptr<XMaterial> playerPbrMaterial = std::make_shared<XMaterial>();
 	playerPbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
-
 
 	std::shared_ptr<XMaterial> enemyPbrMaterial = std::make_shared<XMaterial>();
 	enemyPbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
@@ -79,7 +111,6 @@ void Application::OnUpdate()
 		// set delta time
 		float currentTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentTime - lastFrameTime;
-		lastFrameTime = currentTime;
 
 		// process input
 		m_window.updateInput();
@@ -147,13 +178,13 @@ void Application::Render()
 	glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 	modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 	m_player->model->material->SetMatrix(modelMat, view, proj);
-	m_player->model->Render({0,4,0}, m_playerCam->GetPosition());
+	m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 
 	// render objects
 	for (auto& m : m_environment->models)
 	{
 		m->material->SetMatrix(glm::mat4(1), view, proj);
-		m->Render({ 0,4,0 }, m_playerCam->GetPosition());
+		m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 	}
 
 	// render enemies
@@ -162,7 +193,7 @@ void Application::Render()
 		if (!e->IsAlive()) continue;
 		glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 		e->model->material->SetMatrix(modelMat_enemy, view, proj);
-		e->model->Render({ 0,4,0 }, m_playerCam->GetPosition());
+		e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 	}
 
 	// render projectiles
@@ -171,12 +202,18 @@ void Application::Render()
 		// render projectile
 		glm::mat4 modelMat_projectile = glm::translate(glm::mat4(1), glm::vec3(p->GetPosition()));
 		p->model->material->SetMatrix(modelMat_projectile, view, proj);
-		p->model->Render({ 0,4,0 }, m_playerCam->GetPosition());
+		p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 	}
 
 
 #if _DEBUG
 	DebugWindows();
+#else
+	ImGui::Begin("Debug Info");
+	ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
+	// frame time in ms
+	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
+	ImGui::End();
 #endif
 
 	m_window.swapBuffers();
@@ -299,6 +336,7 @@ void Application::DebugWindows()
 	// imgui debug windows
 	ImGui::Begin("Debug Info");
 	ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
+	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
 	ImGui::End();
 
 	// player info
