@@ -207,11 +207,9 @@ void Application::ProcessContinousInput()
 
 void Application::onKeyPressed(int key, int mods) 
 {
-
 	switch (key)
 	{
 		case GLFW_KEY_C: {
-			//Press C to swich camera angle
 			m_playerCam->SwitchCameraMode();
 			break;
 		}

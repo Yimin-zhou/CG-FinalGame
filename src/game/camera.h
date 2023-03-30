@@ -34,7 +34,7 @@ public:
 	glm::vec3 GetRight();
 
 	// Processes input received from any keyboard-like input system
-	void ProcessKeyboardInput(/* ... */);
+	void ProcessKeyboardInput(GLFWwindow* window);
 
 	// Processes input received from a mouse input system
 	void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch);

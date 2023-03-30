@@ -1,4 +1,5 @@
 #include "camera.h"
+#include<iostream>
 
 Camera::Camera()
 {
@@ -20,14 +21,12 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 {
 	glm::vec3 followPosition = player->GetPosition();
 
-	if (!m_isTopDown) {
-		m_pitch = 0.0f;
-		m_distanceFromPlayer = 4.0f;
-	}
-	else {
+	if (m_isTopDown) {
 		//Top-down camera angle
 		m_pitch = -90.0f;
-		m_distanceFromPlayer = 6.0f;
+	}
+	else {
+		m_pitch = 0.0f;
 	}
 
 	float offsetX = -m_distanceFromPlayer * sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
@@ -42,7 +41,6 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
 	m_up = glm::normalize(glm::cross(m_right, m_front));
 }
-
 
 void Camera::SwitchCameraMode() {
 	m_isTopDown = !m_isTopDown;
@@ -98,7 +96,7 @@ glm::vec3 Camera::GetRight()
 	return m_right;
 }
 
-void Camera::ProcessKeyboardInput(/* ... */) 
+void Camera::ProcessKeyboardInput(GLFWwindow* window) 
 {
 	// Implement keyboard input handling to move the camera
 }
