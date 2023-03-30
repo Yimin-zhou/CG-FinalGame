@@ -26,34 +26,49 @@ glm::mat4 XMaterial::GetProjMatrix()
 	return m_projMat;
 }
 
-//void XMaterial::SetUniform(const std::string& name, float value)
-//{
-//	m_shader.SetUniform(name, value);
-//}
-//
-//void XMaterial::SetUniform(const std::string& name, int value)
-//{
-//	m_shader.SetUniform(name, value);
-//}
-//
-//void XMaterial::SetUniform(const std::string& name, const glm::vec3& value)
-//{
-//	m_shader.SetUniform(name, value);
-//}
-//
-//void XMaterial::SetUniform(const std::string& name, const glm::vec4& value)
-//{
-//	m_shader.SetUniform(name, value);
-//}
-//
-//void XMaterial::SetUniform(const std::string& name, const glm::mat4& value)
-//{
-//	m_shader.SetUniform(name, value);
-//}
+void XMaterial::SetUniform(const std::string& name, float value)
+{
+	m_shader.SetUniform(name, value);
+}
+
+void XMaterial::SetUniform(const std::string& name, int value)
+{
+	m_shader.SetUniform(name, value);
+}
+
+void XMaterial::SetUniform(const std::string& name, const glm::vec3& value)
+{
+	m_shader.SetUniform(name, value);
+}
+
+void XMaterial::SetUniform(const std::string& name, const glm::vec4& value)
+{
+	m_shader.SetUniform(name, value);
+}
+
+void XMaterial::SetUniform(const std::string& name, const glm::mat4& value)
+{
+	m_shader.SetUniform(name, value);
+}
 
 void XMaterial::SetAlbedo(std::filesystem::path textureFilePath, bool shouldFlip)
 {
 	m_albedo = std::make_shared<Texture>(textureFilePath, shouldFlip);
+}
+
+void XMaterial::SetAlbedo(Texture* map)
+{
+	m_albedo = std::shared_ptr<Texture>(map);
+}
+
+void XMaterial::SetRma(std::filesystem::path textureFilePath, bool shouldFlip)
+{
+	m_rma = std::make_shared<Texture>(textureFilePath, shouldFlip);
+}
+
+void XMaterial::SetRma(Texture* map)
+{
+	m_rma = std::shared_ptr<Texture>(map);
 }
 
 void XMaterial::SetShader(std::filesystem::path vertFilePath, std::filesystem::path fragFilePath)
@@ -77,17 +92,40 @@ void XMaterial::SetMatrix(const glm::mat4& view, const glm::mat4& proj)
 	m_projMat = proj;
 }
 
+void XMaterial::SetNormalEm(std::filesystem::path textureFilePath, bool shouldFlip)
+{
+	m_normalEm = std::make_shared<Texture>(textureFilePath, shouldFlip);
+}
+
+void XMaterial::SetNormalEm(Texture* map)
+{
+	m_normalEm = std::shared_ptr<Texture>(map);
+}
+
 void XMaterial::Apply() 
 {
 	m_shader.bind();
 
 	const glm::mat3 normalModelMatrix = glm::inverseTranspose(glm::mat3(m_modelMat));
 
-	m_shader.SetUniform("model", m_modelMat);
-	m_shader.SetUniform("view", m_viewMat);
-	m_shader.SetUniform("projection", m_projMat);
-	m_albedo->bind(GL_TEXTURE0);
-	m_shader.SetUniform("albedoMap", 0);
+	SetUniform("model", m_modelMat);
+	SetUniform("view", m_viewMat);
+	SetUniform("projection", m_projMat);
+	if (m_albedo != nullptr)
+	{
+		m_albedo->bind(GL_TEXTURE0);
+		SetUniform("albedoMap", 0);
+	}
+	if(m_rma != nullptr) 
+	{
+		m_rma->bind(GL_TEXTURE1);
+		SetUniform("rmaMap", 1);
+	}
+	if(m_normalEm != nullptr)
+	{
+		m_normalEm->bind(GL_TEXTURE2);
+		SetUniform("normalEmMap", 2);
+	}
 }
 
 XMaterial::XMaterial() :

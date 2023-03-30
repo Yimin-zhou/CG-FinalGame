@@ -9,6 +9,7 @@ class Model
 {
 public:
 	std::shared_ptr<XMaterial> material;
+	GPUMesh mesh;
 
 	void SetMesh(std::filesystem::path filePath);
 
@@ -20,7 +21,6 @@ public:
 	~Model();
 
 private:
-	GPUMesh m_mesh;
 	Texture m_texture;
 	ShaderBuilder m_shaderBuilder;
 };

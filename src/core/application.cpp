@@ -40,14 +40,27 @@ void Application::Init()
 	std::shared_ptr<XMaterial> defaultMaterial = std::make_shared<XMaterial>();
 	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
 	statuePbrMaterial->SetShader("shaders/pbr_vert.glsl", "shaders/pbr_frag.glsl");
-	statuePbrMaterial->SetAlbedo("resources/statue/albedo.jpg", true);
 
 	// create models
-	std::shared_ptr<Model> model_1 = std::make_shared<Model>(defaultMaterial, "resources/room.obj");
+	std::shared_ptr<Model> model_room = std::make_shared<Model>(defaultMaterial, "resources/room.obj");
 	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
-	// create environment
+
+	// set up textures for the statue
+	if (model_statue->mesh.kdTexture.has_value() && model_statue->mesh.rmaTexture.has_value() 
+		&& model_statue->mesh.normalEmTexture.has_value())
+	{
+		Texture* albedo = new Texture(std::move(model_statue->mesh.kdTexture.value()));
+		Texture* rma = new Texture(std::move(model_statue->mesh.rmaTexture.value())); // roughness, metalness, ambient occlusion
+		Texture* normalEm = new Texture(std::move(model_statue->mesh.normalEmTexture.value())); // normal, emissive
+
+		model_statue->material->SetAlbedo(albedo);
+		model_statue->material->SetRma(rma);
+		model_statue->material->SetNormalEm(normalEm);
+	}
+
+	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
-	models.push_back(model_1);
+	models.push_back(model_room);
 	models.push_back(model_statue);
 	m_environment = std::make_shared<Environment>(models);
 
@@ -218,10 +231,8 @@ void Application::onKeyPressed(int key, int mods)
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
 		case GLFW_KEY_F1:
-			m_window.setMouseCapture(true);
-		case GLFW_KEY_F2:
 			m_window.setMouseCapture(false);
-		case GLFW_KEY_F3:
+		case GLFW_KEY_F2:
 			// spawn new enemy at random position, random position between -20 and 20
 			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
