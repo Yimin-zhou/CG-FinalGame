@@ -129,7 +129,13 @@ std::vector<Mesh> loadMesh(const std::filesystem::path& file, bool centerAndNorm
                 const auto& objMaterial = inMaterials[materialID];
                 mesh.material.kd = construct_vec3(objMaterial.diffuse);
                 if (!objMaterial.diffuse_texname.empty()) {
-                    mesh.material.kdTexture = Image(baseDir / objMaterial.diffuse_texname);
+                    mesh.material.kdTexture = Image(baseDir / objMaterial.diffuse_texname, true);
+                }
+                if (!objMaterial.specular_highlight_texname.empty()) {
+                    mesh.material.rmaTexture = Image(baseDir / objMaterial.specular_highlight_texname, true);
+                }
+                if (!objMaterial.bump_texname.empty()) {
+                    mesh.material.normalEmTexture = Image(baseDir / objMaterial.bump_texname, true);
                 }
                 mesh.material.ks = construct_vec3(objMaterial.specular);
                 mesh.material.shininess = objMaterial.shininess;

@@ -25,6 +25,8 @@ public:
 	// Returns the view matrix calculated using the Euler angles and the lookAt matrix
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetPerspectiveMatrix(Window& window);
+	glm::mat4 GetOthoProjMatrix();
+	glm::mat4 GetOthoViewMatrix();
 	glm::vec3 GetPosition();
 
 	float GetYaw();

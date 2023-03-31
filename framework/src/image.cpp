@@ -10,7 +10,7 @@ DISABLE_WARNINGS_POP()
 #include <iostream>
 #include <string>
 
-Image::Image(const std::filesystem::path& filePath)
+Image::Image(const std::filesystem::path& filePath, bool shouldFlip)
 {
 	if (!std::filesystem::exists(filePath)) {
 		std::cerr << "Texture file " << filePath << " does not exists!" << std::endl;
@@ -20,6 +20,9 @@ Image::Image(const std::filesystem::path& filePath)
 	const auto filePathStr = filePath.string(); // Create l-value so c_str() is safe.
 	[[maybe_unused]] int numChannelsInSourceImage;
 	stbi_uc* stbPixels = stbi_load(filePathStr.c_str(), &width, &height, &numChannelsInSourceImage, STBI_rgb);
+
+	// flip image vertically
+	stbi_set_flip_vertically_on_load(shouldFlip);
 
 	if (!stbPixels) {
 		std::cerr << "Failed to read texture " << filePath << " using stb_image.h" << std::endl;

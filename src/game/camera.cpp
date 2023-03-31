@@ -36,6 +36,10 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	m_position.z = followPosition.z + offsetZ;
 	m_position.y = followPosition.y + offsetY + m_distanceFromPlayer; // yoffset
 
+	// Constrain the camera's position to the ground
+	if (m_position.y <= 0.2f) m_position.y = 0.2f;
+	
+
 	// Update the camera's orientation to look at the player's position
 	m_front = glm::normalize(followPosition - m_position);
 	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
@@ -64,6 +68,16 @@ glm::mat4 Camera::GetViewMatrix()
 glm::mat4 Camera::GetPerspectiveMatrix(Window& window)
 {
 	return glm::perspective(glm::radians(80.0f), (float)window.getWindowSize().x / (float)window.getWindowSize().y, m_near, m_far);
+}
+
+glm::mat4 Camera::GetOthoProjMatrix()
+{
+	return glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 100.0f);
+}
+
+glm::mat4 Camera::GetOthoViewMatrix()
+{
+	return glm::lookAt(m_position, glm::vec3(0), m_up);
 }
 
 glm::vec3 Camera::GetPosition()

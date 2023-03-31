@@ -31,6 +31,8 @@ struct Material {
 	//   material.kdTexture->getTexel(...);
 	// }
 	std::optional<Image> kdTexture;
+	std::optional<Image> rmaTexture;
+	std::optional<Image> normalEmTexture;
 };
 
 struct Mesh {
