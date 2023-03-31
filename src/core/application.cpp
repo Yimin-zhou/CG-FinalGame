@@ -72,6 +72,21 @@ void Application::Init()
 	shadowBuilder.addStage(GL_VERTEX_SHADER, "shaders/shadow_vert.glsl");
 	m_shadowShader = shadowBuilder.build();
 
+	ShaderBuilder projectileBuilder;
+	projectileBuilder.addStage(GL_VERTEX_SHADER, "shaders/projectile_vert.glsl");
+	projectileBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/projectile_frag.glsl");
+	m_projectileShader = projectileBuilder.build();
+
+	ShaderBuilder particleBuilder;
+	particleBuilder.addStage(GL_VERTEX_SHADER, "shaders/particle_vert.glsl");
+	particleBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/particle_frag.glsl");
+	m_particleShader = particleBuilder.build();
+
+	// setup particle
+	m_particleMesh = std::make_shared<ParticleMesh>();
+	m_particleMaterial = std::make_shared<ParticleMaterial>(m_particleShader);
+	m_particleSystem = std::make_shared<ParticleSystem>(m_particleMesh, m_particleMaterial, 100);
+
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
 	// point light
@@ -110,8 +125,8 @@ void Application::Init()
 	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
 
 	// create materials
-	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
-	statuePbrMaterial->SetShader(m_mainShader);
+	std::shared_ptr<XMaterial> roomPbrMaterial = std::make_shared<XMaterial>();
+	roomPbrMaterial->SetShader(m_mainShader);
 
 	std::shared_ptr<XMaterial> playerPbrMaterial = std::make_shared<XMaterial>();
 	playerPbrMaterial->SetShader(m_mainShader);
@@ -119,9 +134,12 @@ void Application::Init()
 	std::shared_ptr<XMaterial> enemyPbrMaterial = std::make_shared<XMaterial>();
 	enemyPbrMaterial->SetShader(m_mainShader);
 
+	std::shared_ptr<XMaterial> projectileMaterial = std::make_shared<XMaterial>();
+	projectileMaterial->SetShader(m_projectileShader);
+
 	// create models
-	std::shared_ptr<Model> model_room = std::make_shared<Model>(statuePbrMaterial, "resources/room.obj");
-	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
+	std::shared_ptr<Model> model_room = std::make_shared<Model>(roomPbrMaterial, "resources/room.obj");
+	std::shared_ptr<Model> model_statue = std::make_shared<Model>(roomPbrMaterial, "resources/statue/statue.obj");
 
 	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
@@ -140,11 +158,11 @@ void Application::Init()
 	m_enemies.push_back(enemy_1);
 
 	// init projectile model
-	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
+	m_projectileModel = std::make_shared<Model>(projectileMaterial, "resources/projectile.obj");
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(statuePbrMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(roomPbrMaterial, framePaths);
 }
 
 void Application::OnUpdate() 
@@ -197,6 +215,9 @@ void Application::OnUpdate()
 		
 		// update animated Model
 		m_animatedModel->Update(deltaTime);
+
+		// update particle system
+		m_particleSystem->update(deltaTime);
 
 		// render scene
 		ShadowRender();
@@ -330,6 +351,9 @@ void Application::MainRender()
 			p->model->material->SetMatrix(modelMat_projectile, view, proj);
 			p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
+
+		// render particles
+		m_particleSystem->render(view, proj, m_particleShader);
 	}
 	
 

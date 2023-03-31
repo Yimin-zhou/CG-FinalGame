@@ -25,11 +25,17 @@ DISABLE_WARNINGS_POP()
 #include "render/light/directionalLight.h"
 #include "render/light/pointLight.h"
 #include "render/light/spotLight.h"
+#include "render/effect/particleSystem.h"
+#include "render/effect/particle.h"
+#include "render/effect/particleMesh.h"
+#include "render/effect/particleMaterial.h"
+
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
 #include "game/projectile.h"
 #include "game/animatedModel.h"
+
 
 class Application
 {
@@ -78,6 +84,14 @@ private:
 	GLuint m_shadowMapFBO;
 	std::shared_ptr<Camera> m_shadowCam;
 
+	// shaders
 	Shader m_shadowShader;
 	Shader m_mainShader;
+	Shader m_projectileShader;
+	Shader m_particleShader;
+
+	// particle system
+	std::shared_ptr<ParticleSystem> m_particleSystem;
+	std::shared_ptr<ParticleMesh> m_particleMesh;
+	std::shared_ptr<ParticleMaterial> m_particleMaterial;
 };

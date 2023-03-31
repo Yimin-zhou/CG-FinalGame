@@ -269,17 +269,17 @@ void main()
     shadow /= 9.0;
     Lo *= shadow;
 
-    // point
-    for(int i = 0; i < MAX_POINT_LIGHTS; i++)
-	{
-		Lo += CalcPointLight(pointLights[i], N, V, albedo, roughness, metallic, F0);
-	}
-
-    // spot
-    for(int i = 0; i < MAX_SPOT_LIGHTS; i++)
-    {
-        Lo += CalcSpotLight(spotLights[i], N, V, albedo, roughness, metallic, F0);
-    }
+//    // point
+//    for(int i = 0; i < MAX_POINT_LIGHTS; i++)
+//	{
+//		Lo += CalcPointLight(pointLights[i], N, V, albedo, roughness, metallic, F0);
+//	}
+//
+//    // spot
+//    for(int i = 0; i < MAX_SPOT_LIGHTS; i++)
+//    {
+//        Lo += CalcSpotLight(spotLights[i], N, V, albedo, roughness, metallic, F0);
+//    }
 
 
     // indirect
