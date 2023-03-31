@@ -20,7 +20,7 @@ add_executable(FinalProject
 	"src/render/environment.cpp"
 	"src/render/model.cpp"
 	
- "src/main.cpp" "src/game/camera.cpp" "src/game/player.cpp" "src/game/enemy.cpp" "src/game/projectile.cpp"  "src/render/light/light.cpp" "src/render/light/directionalLight.cpp" "src/render/light/pointLight.cpp" "src/render/light/spotLight.cpp")
+ "src/main.cpp" "src/game/camera.cpp" "src/game/player.cpp" "src/game/enemy.cpp" "src/game/projectile.cpp"  "src/render/light/light.cpp" "src/render/light/directionalLight.cpp" "src/render/light/pointLight.cpp" "src/render/light/spotLight.cpp" )
 target_compile_features(FinalProject PRIVATE cxx_std_20)
 target_link_libraries(FinalProject PRIVATE CGFramework)
 enable_sanitizers(FinalProject)

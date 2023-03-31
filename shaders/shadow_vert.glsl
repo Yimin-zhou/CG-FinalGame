@@ -1,10 +1,12 @@
 #version 450
 
-layout(location = 0) uniform mat4 mvpMatrix;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
-layout(location = 0) in vec3 position;
+in vec3 position;
 
 void main()
 {
-    gl_Position = mvpMatrix * vec4(position, 1);
+    gl_Position = projection * view * model * vec4(position, 1);
 }

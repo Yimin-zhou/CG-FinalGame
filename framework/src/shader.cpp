@@ -31,6 +31,21 @@ Shader::Shader(Shader&& other)
     other.m_program = invalid;
 }
 
+ Shader::Shader(const Shader& other)
+{
+     m_program = other.m_program;
+}
+
+ Shader& Shader::operator=(const Shader& other)
+{
+     if (this == &other) {
+         return *this; // self-assignment check
+     }
+
+     m_program = other.m_program;
+     return *this;
+}
+
 Shader::~Shader()
 {
     if (m_program != invalid)
@@ -85,6 +100,7 @@ void Shader::SetUniform(const std::string& name, const glm::mat3& value)
 void Shader::SetUniform(const std::string& name, const glm::mat4& value)
 {
     assert(m_program != invalid);
+
     GLint location = glGetUniformLocation(m_program, name.c_str());
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }

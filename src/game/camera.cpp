@@ -59,6 +59,16 @@ glm::mat4 Camera::GetPerspectiveMatrix(Window& window)
 	return glm::perspective(glm::radians(80.0f), (float)window.getWindowSize().x / (float)window.getWindowSize().y, m_near, m_far);
 }
 
+glm::mat4 Camera::GetOthoProjMatrix()
+{
+	return glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 100.0f);
+}
+
+glm::mat4 Camera::GetOthoViewMatrix()
+{
+	return glm::lookAt(m_position, glm::vec3(0), m_up);
+}
+
 glm::vec3 Camera::GetPosition()
 {
 	return m_position;

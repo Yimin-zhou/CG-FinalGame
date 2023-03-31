@@ -84,6 +84,19 @@ void XMaterial::SetShader(std::filesystem::path vertFilePath, std::filesystem::p
 	m_shader = builder.build();
 }
 
+void XMaterial::SetShader(std::filesystem::path vertFilePath)
+{
+	// for shadow pass
+	ShaderBuilder builder;
+	builder.addStage(GL_VERTEX_SHADER, vertFilePath);
+	m_shader = builder.build();
+}
+
+void XMaterial::SetShader(Shader& shader)
+{
+	m_shader = shader;
+}
+
 void XMaterial::SetMatrix(const glm::mat4& model, const glm::mat4& view, const glm::mat4& proj)
 {
 	m_modelMat = model;

@@ -15,6 +15,8 @@ public:
 	glm::mat4 GetProjMatrix();
 
 	void SetShader(std::filesystem::path vertFilePath, std::filesystem::path fragFilePath);
+	void SetShader(std::filesystem::path vertFilePath);
+	void SetShader(Shader& shader);
 	void SetMatrix(const glm::mat4& model, const glm::mat4& view, const glm::mat4& proj);
 	void SetMatrix(const glm::mat4& view, const glm::mat4& proj);
 

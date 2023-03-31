@@ -21,11 +21,12 @@ struct ShaderLoadingException : public std::runtime_error {
 class Shader {
 public:
     Shader();
-    Shader(const Shader&) = delete;
+    Shader(const Shader& other); // Custom copy constructor
     Shader(Shader&&);
     ~Shader();
 
     Shader& operator=(Shader&&);
+    Shader& operator=(const Shader& other);
 
     void SetUniform(const std::string& name, float value);
     void SetUniform(const std::string& name, int value);

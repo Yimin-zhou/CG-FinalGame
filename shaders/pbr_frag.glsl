@@ -1,20 +1,26 @@
 #version 450
 
+
+layout(location = 4) uniform mat4 lightSpaceMatrix;
+
+layout(location = 5) uniform sampler2D albedoMap; // albedo, opacity, (srgb)
+layout(location = 6) uniform sampler2D rmaMap; // roughness, metalness, ambient occlusion
+layout(location = 7) uniform sampler2D normalEmMap; // normal, emissive
+layout(location = 8) uniform sampler2D shadowMap;
+
+layout(location = 9) uniform float roughnessMultiplier;
+layout(location = 10) uniform vec3 baseColor;
+layout(location = 11) uniform vec3 lightColor;
+layout(location = 12) uniform vec3 emissiveColor;
+
+layout(location = 13) uniform vec3 cameraPos;
+
 in vec3 fragPosition;
 in vec3 fragNormal;
 in vec2 fragTexCoord;
 out vec4 fragColor;
 
-uniform sampler2D albedoMap; // albedo, opacity, (srgb)
-uniform sampler2D rmaMap; // roughness, metalness, ambient occlusion
-uniform sampler2D normalEmMap; // normal, emissive
-
-uniform float roughnessMultiplier;
-uniform vec3 baseColor;
-uniform vec3 lightColor;
-uniform vec3 emissiveColor;
-
-uniform vec3 cameraPos;
+in vec4 temp;
 
 // Directional light struct
 struct DirectionalLight 
@@ -49,9 +55,13 @@ struct SpotLight
     float outerCutoff;
 };
 
+// define MAX POINT LIGHTS
+#define MAX_POINT_LIGHTS 4
+#define MAX_SPOT_LIGHTS 4
+
 uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[4];
-uniform SpotLight spotLights[4];
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 const float PI = 3.14159265359;
 
@@ -160,7 +170,7 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 albedo, float roughne
     vec3 H = normalize(V + L);
     float distance = length(light.position - fragPosition);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-    vec3 radiance = light.color * light.intensity;
+    vec3 radiance = light.color * light.intensity * attenuation;
         
     // cook-torrance brdf
     float NDF = DistributionGGX(N, H, roughness);        
@@ -187,16 +197,17 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 albedo, float roughness
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
     float theta = dot(light.direction, normalize(-L)); // Angle between light direction and direction to fragment
+    float falloff = 1.0;
     if (theta > light.outerCutoff) 
     {
-        light.intensity = (theta - light.outerCutoff) / (light.innerCutoff - light.outerCutoff); // Smooth falloff between inner and outer cones
+        falloff = (theta - light.outerCutoff) / (light.innerCutoff - light.outerCutoff); // Smooth falloff between inner and outer cones
     } 
     else 
     {
-        light.intensity = 0.0; // Outside the outer cone, no light
+        falloff = 0.0; // Outside the outer cone, no light
     }
 
-    vec3 radiance = light.color * light.intensity;
+    vec3 radiance = light.color * light.intensity * falloff * attenuation;
         
     // cook-torrance brdf
     float NDF = DistributionGGX(N, H, roughness);        
@@ -214,7 +225,6 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 albedo, float roughness
     float NdotL = max(dot(N, L), 0.0);   
     return (kD * albedo / PI + specular) * radiance * NdotL;
 }
-
 
 void main()
 {
@@ -238,24 +248,46 @@ void main()
     // directional
     Lo += CalcDirectionalLight(directionalLight, N, V, albedo, roughness, metallic, F0);
 
+    // Shadow calculation.
+    vec4 shadowCoord = lightSpaceMatrix * vec4(fragPosition, 1.0); // Light space position
+    shadowCoord /= shadowCoord.w; // Perspective divide
+    shadowCoord = shadowCoord * 0.5 + 0.5; // Convert to [0, 1] range
+    float closestDepth = texture(shadowMap, shadowCoord.xy).r; // Read depth from texture
+    float currentDepth = shadowCoord.z; // Depth of current fragment in light space
+    float bias = 0.005; // Bias to avoid shadow acne
+    
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -2; x <= 2; ++x)
+    {
+        for(int y = -2; y <= 2; ++y)
+        {
+            float pcfDepth = texture(shadowMap, shadowCoord.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias> pcfDepth ? 0.0 : 1.0;        
+        }    
+    }
+    shadow /= 9.0;
+    Lo *= shadow;
+
     // point
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++)
 	{
 		Lo += CalcPointLight(pointLights[i], N, V, albedo, roughness, metallic, F0);
 	}
 
     // spot
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < MAX_SPOT_LIGHTS; i++)
     {
         Lo += CalcSpotLight(spotLights[i], N, V, albedo, roughness, metallic, F0);
     }
 
+
     // indirect
-    vec3 ambient = vec3(0.5) * albedo * ao; // TODO
+    vec3 ambient = vec3(0.1) * albedo * ao; // TODO
     vec3 color = ambient + Lo + emissive;
 	
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2)); // gamma correction
 
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(vec3(color), 1.0);
 }
