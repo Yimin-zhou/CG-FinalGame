@@ -16,29 +16,34 @@ ParticleSystem::ParticleSystem(std::shared_ptr<ParticleMesh> mesh,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	std::mt19937 randomEngine(std::random_device{}());
-	std::uniform_real_distribution<float> positionDistribution(-10.0f, 10.0f);
-	std::uniform_real_distribution<float> velocityDistribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> positionDistribution(0.0f, 10.0f);
+	std::uniform_real_distribution<float> velocityDistribution(0.0f, 0.0f);
 	std::uniform_real_distribution<float> colorDistribution(0.1f, 1.0f);
-	std::uniform_real_distribution<float> lifeDistribution(1.0f, 5.0f);
-	std::uniform_real_distribution<float> scaleDistribution(0.5f, 2.0f);
+	std::uniform_real_distribution<float> lifeDistribution(10.0f, 50.0f);
+	std::uniform_real_distribution<float> scaleDistribution(1.0f, 1.0f);
 	// Initialize the particles
-	for (unsigned int i = 0; i < m_maxParticles; ++i) 
+	for (uint32_t i = 0; i < m_maxParticles; ++i) 
 	{
 		glm::vec3 position(positionDistribution(randomEngine), positionDistribution(randomEngine), positionDistribution(randomEngine));
 		glm::vec3 velocity(velocityDistribution(randomEngine), velocityDistribution(randomEngine), velocityDistribution(randomEngine));
 		glm::vec4 color(colorDistribution(randomEngine), colorDistribution(randomEngine), colorDistribution(randomEngine), 1.0f);
-		float life = lifeDistribution(randomEngine);
+		float life = 50.0f;
 		float scale = scaleDistribution(randomEngine);
 
-		m_particles.push_back(std::make_shared<Particle>(m_mesh, m_material, scale, position, velocity, color, life));
+		m_particles[i] = std::make_shared<Particle>(m_mesh, m_material, scale, position, velocity, color, life);
 	}
 
 }
 
-void ParticleSystem::bind()
+ParticleSystem::~ParticleSystem()
 {
-	// Bind the particle mesh
-	glBindVertexArray(m_mesh->getVAO());
+	// Delete the instance buffer
+	glDeleteBuffers(1, &m_instanceBuffer);
+}
+
+void ParticleSystem::setShader(Shader& shader)
+{
+	m_shader = shader;
 }
 
 std::shared_ptr<ParticleMaterial> ParticleSystem::getMaterial() const
@@ -53,18 +58,19 @@ void ParticleSystem::update(float deltaTime)
 	}
 }
 
-void ParticleSystem::render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, Shader shader)
+void ParticleSystem::render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 {
-	shader.bind();
+	m_shader.bind();
 
-	shader.SetUniform("view", viewMatrix);
-	shader.SetUniform("projection", projectionMatrix);
+	m_shader.SetUniform("view", viewMatrix);
+	m_shader.SetUniform("projection", projectionMatrix);
 
 	// Bind the particle mesh
-	ParticleSystem::bind();
+	glBindVertexArray(m_mesh->getVAO());
 
 	// Bind the particle material properties
 	m_material->getTexture()->bind(0);
+	m_shader.SetUniform("particleMap", 0);
 	glBlendFunc(m_material->getSrcBlendFactor(), m_material->getDstBlendFactor());
 
 	// Update instance data
@@ -72,7 +78,8 @@ void ParticleSystem::render(const glm::mat4& viewMatrix, const glm::mat4& projec
 	for (unsigned int i = 0; i < m_maxParticles; ++i) 
 	{
 		auto& particle = m_particles[i];
-		if (particle->isAlive()) {
+		if (particle->isAlive()) 
+		{
 			m_instanceData[instanceCount].modelMatrix = particle->modelMatrix();
 			m_instanceData[instanceCount].color = particle->color();
 			++instanceCount;
@@ -102,7 +109,8 @@ void ParticleSystem::render(const glm::mat4& viewMatrix, const glm::mat4& projec
 	glDrawElementsInstanced(GL_TRIANGLES, m_mesh->getIndicesCount(), GL_UNSIGNED_INT, 0, instanceCount);
 
 	// Reset the instance buffer
-	for (int i = 3; i < 8; ++i) {
+	for (int i = 3; i < 8; ++i) 
+	{
 		glVertexAttribDivisor(i, 0);
 	}
 }

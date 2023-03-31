@@ -11,5 +11,6 @@ layout(location = 0) out vec4 fragColor;
 void main()
 {
     const vec3 emissiveColor = vec3(0.97, 0.21, 0.2);
-	fragColor = vec4(vec3(particleColor), 1.0);
+	vec4 tex = texture(particleMap, fragTexCoord);
+	fragColor = vec4(vec3(tex * particleColor), tex.a);
 }

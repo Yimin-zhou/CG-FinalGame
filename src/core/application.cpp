@@ -83,9 +83,11 @@ void Application::Init()
 	m_particleShader = particleBuilder.build();
 
 	// setup particle
+	// texture for particle
+	m_particleTexture = std::make_shared<Texture>("resources/textures/particle.png", true);
 	m_particleMesh = std::make_shared<ParticleMesh>();
-	m_particleMaterial = std::make_shared<ParticleMaterial>(m_particleShader);
-	m_particleSystem = std::make_shared<ParticleSystem>(m_particleMesh, m_particleMaterial, 100);
+	m_particleMaterial = std::make_shared<ParticleMaterial>(m_particleTexture);
+	m_particleSystem = std::make_shared<ParticleSystem>(m_particleMesh, m_particleMaterial, 10);
 
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
@@ -342,7 +344,6 @@ void Application::MainRender()
 			}
 			e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
-
 		// render projectiles
 		for (auto& p : m_projectiles)
 		{
@@ -352,8 +353,13 @@ void Application::MainRender()
 			p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 
+		// turn off backface culling
+		glDisable(GL_CULL_FACE);
 		// render particles
-		m_particleSystem->render(view, proj, m_particleShader);
+		m_particleSystem->setShader(m_particleShader);
+		m_particleSystem->render(view, proj);
+
+
 	}
 	
 

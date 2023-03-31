@@ -91,6 +91,7 @@ private:
 	Shader m_particleShader;
 
 	// particle system
+	std::shared_ptr<Texture> m_particleTexture;
 	std::shared_ptr<ParticleSystem> m_particleSystem;
 	std::shared_ptr<ParticleMesh> m_particleMesh;
 	std::shared_ptr<ParticleMaterial> m_particleMaterial;

@@ -24,19 +24,22 @@ public:
 	ParticleSystem(std::shared_ptr<ParticleMesh> mesh,
 		std::shared_ptr<ParticleMaterial> material, uint32_t maxParticless);
 
-	void bind();
+	~ParticleSystem();
+
+	void setShader(Shader& shader);
 
 	// get material
 	std::shared_ptr<ParticleMaterial> getMaterial() const;
 
 	void update(float deltaTime);
 
-	void render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, Shader shader);
+	void render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 
 private:
 	std::shared_ptr<ParticleMesh> m_mesh;
 	std::shared_ptr<ParticleMaterial> m_material;
-	unsigned int m_maxParticles;
+	Shader m_shader;
+	uint32_t m_maxParticles;
 	std::vector<std::shared_ptr<Particle>> m_particles;
 
 	// instancing
