@@ -17,6 +17,9 @@ public:
 	// Update the camera's position and orientation based on the player's position and rotation angle
 	void FollowPlayer(std::shared_ptr<Player> player);
 
+	//Switch camera mode
+	void SwitchCameraMode();
+
 	void Zoom(float offset);
 
 	// Returns the view matrix calculated using the Euler angles and the lookAt matrix
@@ -31,7 +34,7 @@ public:
 	glm::vec3 GetRight();
 
 	// Processes input received from any keyboard-like input system
-	void ProcessKeyboardInput(/* ... */);
+	void ProcessKeyboardInput(GLFWwindow* window);
 
 	// Processes input received from a mouse input system
 	void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch);
@@ -57,6 +60,9 @@ private:
 	float m_zoom;
 	float m_near = 0.1f;
 	float m_far = 100.0f;
+
+	//Top-down options
+	bool m_isTopDown = false;
 
 	// Calculates the front vector from the camera's updated Euler angles
 	void updateCameraVectors();
