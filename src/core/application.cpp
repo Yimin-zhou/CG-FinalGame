@@ -58,6 +58,10 @@ void Application::Init()
 
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(defaultMaterial, "resources/projectile.obj");
+
+	// init animated model
+	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
+	m_animatedModel = std::make_shared<AnimatedModel>(defaultMaterial, framePaths);
 }
 
 void Application::OnUpdate() 
@@ -108,7 +112,9 @@ void Application::OnUpdate()
 
 				return shouldDestroy;
 			}), m_projectiles.end());
-
+		
+		// update animated Model
+		m_animatedModel->Update(deltaTime);
 
 		// render scene
 		Render();
@@ -138,6 +144,10 @@ void Application::Render()
 	m_player->model->material->SetMatrix(modelMat, view, proj);
 	m_player->model->Render();
 
+	// render animated model
+	m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+	m_animatedModel->Render();
+
 	// render objects
 	for (auto& m : m_environment->models)
 	{
@@ -162,7 +172,7 @@ void Application::Render()
 		p->model->material->SetMatrix(modelMat_projectile, view, proj);
 		p->model->Render();
 	}
-
+	
 
 #if _DEBUG
 	DebugWindows();
@@ -205,6 +215,7 @@ void Application::ProcessContinousInput()
 	}
 }
 
+
 void Application::onKeyPressed(int key, int mods) 
 {
 	switch (key)
@@ -245,7 +256,7 @@ void Application::onMouseMove(const glm::dvec2& cursorPos)
         lastY = static_cast<float>(cursorPos.y);
         firstMouse = false;
     }
-
+	
     float xoffset = static_cast<float>(cursorPos.x) - lastX;
     float yoffset = lastY - static_cast<float>(cursorPos.y); // Reversed since y-coordinates go from bottom to top
     lastX = static_cast<float>(cursorPos.x);
@@ -271,6 +282,21 @@ void Application::onMouseClicked(int button, int mods)
 void Application::onMouseReleased(int button, int mods) 
 {
 
+}
+
+const std::vector<std::string> Application::loadFramePaths(const std::string& folderPath) {
+	std::vector<std::string> framePaths;
+
+	for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+		if (entry.is_regular_file() && entry.path().extension() == ".obj") {
+			framePaths.push_back(entry.path().string());
+		}
+	}
+
+	// Sort the frame paths to ensure they are in the correct order
+	std::sort(framePaths.begin(), framePaths.end());
+
+	return framePaths;
 }
 
 void Application::DebugWindows()
