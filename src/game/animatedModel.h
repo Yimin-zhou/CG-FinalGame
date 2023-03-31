@@ -15,7 +15,10 @@ public:
 	std::shared_ptr<XMaterial> material;
 
 	void Update(float deltaTime);
-	void Render();
+	void Render(std::shared_ptr<DirectionalLight> dirLight,
+		std::vector<std::shared_ptr<PointLight>>& pointLights,
+		std::vector<std::shared_ptr<SpotLight>>& spotLights,
+		const glm::vec3& camPos);
 
 	AnimatedModel(const std::shared_ptr<XMaterial>& material, const std::vector<std::string>& framePaths);
 

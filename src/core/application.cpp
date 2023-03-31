@@ -144,7 +144,7 @@ void Application::Init()
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(defaultMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(statuePbrMaterial, framePaths);
 }
 
 void Application::OnUpdate() 
@@ -228,6 +228,12 @@ void Application::ShadowRender()
 		m_player->model->material->SetMatrix(modelMat, view, proj);
 		m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 
+		// render animated model
+		m_animatedModel->material->SetShader(m_shadowShader);
+		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+		m_animatedModel->Render(m_directionalLight, m_pointLights,
+			m_spotLights, m_playerCam->GetPosition());
+
 		// render objects
 		for (auto& m : m_environment->models)
 		{
@@ -280,8 +286,10 @@ void Application::MainRender()
 		m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 
 		// render animated model
+		m_animatedModel->material->SetShader(m_mainShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-		m_animatedModel->Render();
+		m_animatedModel->Render(m_directionalLight, m_pointLights, 
+			m_spotLights, m_playerCam->GetPosition());
 
 		// render objects
 		for (auto& m : m_environment->models)
@@ -377,10 +385,9 @@ void Application::onKeyPressed(int key, int mods)
 {
 	switch (key)
 	{
-		case GLFW_KEY_C: {
+		case GLFW_KEY_C: 
 			m_playerCam->SwitchCameraMode();
 			break;
-		}
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
 		case GLFW_KEY_F1:
@@ -390,9 +397,10 @@ void Application::onKeyPressed(int key, int mods)
 			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
 			m_enemies.push_back(enemy);
-		}
+		
 	}
 }
+
 
 void Application::onKeyReleased(int key, int mods) 
 {
