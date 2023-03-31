@@ -8,17 +8,17 @@ AnimatedModel::~AnimatedModel()
 
 void AnimatedModel::Update(float deltaTime)
 {
-	elapsedTime += deltaTime;
-	if (elapsedTime >= frameDuration) {
-		elapsedTime -= frameDuration;
-		currentFrame = (currentFrame + 1) % m_frames.size();
+	m_elapsedTime += deltaTime;
+	if (m_elapsedTime >= m_frameDuration) {
+		m_elapsedTime -= m_frameDuration;
+		m_currentFrame = (m_currentFrame + 1) % frames.size();
 	}
 
 }
 
 void AnimatedModel::Render()
 {
-	m_frames[currentFrame]->Render();
+	frames[m_currentFrame]->Render();
 }
 
 AnimatedModel::AnimatedModel()
@@ -26,10 +26,10 @@ AnimatedModel::AnimatedModel()
 }
 
 AnimatedModel::AnimatedModel(const std::shared_ptr<XMaterial>& mater, const std::vector<std::string>& framePaths) :
-	material(mater), currentFrame(0), frameDuration(1.0f / 60.0f), elapsedTime(0.0f)
+	material(mater), m_currentFrame(0), m_frameDuration(1.0f / 60.0f), m_elapsedTime(0.0f)
 {
 	for (const auto& path : framePaths) {
 		auto frame = std::make_shared<Model>(material, path);
-		m_frames.push_back(frame);
+		frames.push_back(frame);
 	}
 }

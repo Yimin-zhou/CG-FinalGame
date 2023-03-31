@@ -52,6 +52,8 @@ public:
 	Application();
 
 private:
+	bool m_trailerPlaying = false;
+	float m_trailerStartTime = -1.0f;
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
@@ -65,4 +67,6 @@ private:
 
 	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
+
+	std::vector<glm::vec3> m_points;
 };

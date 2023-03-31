@@ -11,7 +11,7 @@
 class AnimatedModel
 {
 public:
-	std::vector<std::shared_ptr<Model>> m_frames;
+	std::vector<std::shared_ptr<Model>> frames;
 	std::shared_ptr<XMaterial> material;
 
 	void Update(float deltaTime);
@@ -24,7 +24,7 @@ public:
 	
 private:
 	
-	int currentFrame;
-	float frameDuration;
-	float elapsedTime;
+	int m_currentFrame;
+	float m_frameDuration;
+	float m_elapsedTime;
 };

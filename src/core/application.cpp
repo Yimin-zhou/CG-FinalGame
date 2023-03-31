@@ -55,13 +55,29 @@ void Application::Init()
 	std::shared_ptr<Enemy> enemy_1 = std::make_shared<Enemy>(glm::vec3(0, 0, 0), 1.0f, 4);
 	enemy_1->model = m_enemyModel;
 	m_enemies.push_back(enemy_1);
-
+	
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(defaultMaterial, "resources/projectile.obj");
-
+	
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_animatedModel = std::make_shared<AnimatedModel>(defaultMaterial, framePaths);
+
+	// startTrailer
+	m_trailerPlaying = true;
+	m_trailerStartTime = static_cast<float>(glfwGetTime());
+
+	// set curve points for plotting the trace of the camera
+	std::vector<glm::vec3> m_points;
+}
+
+void createCameraControlPoints(std::shared_ptr <Player> m_player, glm::vec3 controlPoints[4]) {
+	
+	controlPoints[0] = m_player->GetPosition() + glm::vec3(5.0f, 8.0f, 7.0f);
+	controlPoints[1] = controlPoints[0] + m_player->GetPlayerFront() * 2.0f;
+	controlPoints[2] = controlPoints[0] + m_player->GetPlayerFront() * 4.0f + m_player->GetPlayerLeft() * 2.0f;
+	controlPoints[3] = controlPoints[0] + m_player->GetPlayerFront() * 6.0f;
+	
 }
 
 void Application::OnUpdate() 
@@ -81,8 +97,48 @@ void Application::OnUpdate()
 		// Player
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
-		m_playerCam->FollowPlayer(m_player);
+		//m_playerCam->FollowPlayer(m_player);
+		
+		if (m_trailerPlaying)
+		{
+			glm::vec3 curve1[4];
+			createCameraControlPoints(m_player, curve1);
+			BezierCurve cameraPath1(curve1[0], curve1[1], curve1[2], curve1[3]);
 
+			
+			for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
+				glm::vec3 point = cameraPath1.evaluate(t);
+				m_points.push_back(point);
+			}
+
+			glm::vec3 curve2[4];
+			// Control points for the second curve (connects smoothly to the first curve)
+			curve2[0] = curve1[3];
+			curve2[1] = curve2[0] + glm::vec3(-12.0f, 39.0f, 6.0f);
+			curve2[2] = curve2[0] + glm::vec3(-3.0f, 17.0f, -5.0f);
+			curve2[3] = curve2[0] + glm::vec3(10.0f, 9.0f, 10.0f);
+			
+			BezierCurve cameraPath2(curve2[0], curve2[1], curve2[2], curve2[3]);
+
+			for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
+				glm::vec3 point = cameraPath2.evaluate(t);
+				m_points.push_back(point);
+			}
+			std::vector<BezierCurve> curves = { cameraPath1, cameraPath2 };
+			CompositeBezierCurve cameraPath(curves);
+			float trailerDuration = 7.0f; // Duration of the trailer in seconds
+			float t = fmod(currentTime - m_trailerStartTime, trailerDuration) / trailerDuration;
+			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath1, t);
+			m_playerCam->FollowPlayerAlongCompositeBezierCurve(m_player, cameraPath, t);
+			if (currentTime - m_trailerStartTime >= trailerDuration)
+			{
+				m_trailerPlaying = false;
+			}
+		}
+		else
+		{
+			m_playerCam->FollowPlayer(m_player);
+		}
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
 		{
@@ -122,10 +178,33 @@ void Application::OnUpdate()
 	}
 }
 
+
 void Application::Render()
 {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Create a VBO to store the points
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, m_points.size() * sizeof(glm::vec3), &m_points[0], GL_STATIC_DRAW);
+
+	// Create a VAO to define the vertex layout
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+	// Render the points
+	glPointSize(15.0f);
+	glBindVertexArray(vao);
+	glDrawArrays(GL_POINTS, 0, m_points.size());
+
+	// Clean up
+	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
