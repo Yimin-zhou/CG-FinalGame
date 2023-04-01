@@ -21,11 +21,17 @@ DISABLE_WARNINGS_POP()
 
 #pragma once
 
-#include "game/level.h"
+#include "render/environment.h"
+#include "render/light/directionalLight.h"
+#include "render/light/pointLight.h"
+#include "render/light/spotLight.h"
+#include "render/effect/particleSystem.h"
+
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
 #include "game/projectile.h"
+#include "game/animatedModel.h"
 
 class Application
 {
@@ -35,7 +41,8 @@ public:
 
 	void Init();
 	void OnUpdate();
-	void Render();
+	void ShadowRender();
+	void MainRender();
 	void ProcessContinousInput();
 
 	void onKeyPressed(int key, int mods);
@@ -44,6 +51,7 @@ public:
 	void onMouseScroll(const glm::dvec2& cursorPos);
 	void onMouseClicked(int button, int mods);
 	void onMouseReleased(int button, int mods);
+	const std::vector<std::string> loadFramePaths(const std::string& folderPath);
 
 	void DebugWindows();
 
@@ -53,6 +61,8 @@ private:
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
+	
+	std::shared_ptr<AnimatedModel> m_animatedModel;
 
 	std::vector<std::shared_ptr<Projectile>> m_projectiles;
 	std::shared_ptr<Model> m_projectileModel;
@@ -61,4 +71,21 @@ private:
 
 	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
+	std::shared_ptr<DirectionalLight> m_directionalLight;
+	std::vector<std::shared_ptr<PointLight>> m_pointLights;
+	std::vector<std::shared_ptr<SpotLight>> m_spotLights;
+
+	// shadow mapping
+	GLuint m_shadowTex;
+	GLuint m_shadowMapFBO;
+	std::shared_ptr<Camera> m_shadowCam;
+
+	Shader m_shadowShader;
+	Shader m_mainShader;
+	Shader m_projectileShader;
+	Shader m_particleShader;
+
+	// particle
+	std::shared_ptr<ParticleSystem> m_particleSystem;
+	ParticleProps m_particleProps;
 };

@@ -4,11 +4,19 @@ DISABLE_WARNINGS_PUSH()
 #include <fmt/format.h>
 DISABLE_WARNINGS_POP()
 
+Texture::Texture(std::filesystem::path filePath, bool shouldFlip)
+{
+	// Load image from disk to CPU memory.
+	// Image class is defined in <framework/image.h>
+	Image cpuTexture{ filePath, shouldFlip };
+	initialize(cpuTexture);
+}
+
 Texture::Texture(std::filesystem::path filePath)
 {
 	// Load image from disk to CPU memory.
 	// Image class is defined in <framework/image.h>
-	Image cpuTexture{ filePath };
+	Image cpuTexture{ filePath , false };
 	initialize(cpuTexture);
 }
 

@@ -20,6 +20,15 @@ GPUMesh::GPUMesh(std::filesystem::path filePath)
 		m_hasTextureCoords = true;
 		kdTexture = Texture(m_material.kdTexture.value());
 	}
+	if (m_material.rmaTexture.has_value()) {
+		m_hasTextureCoords = true;
+		rmaTexture = Texture(m_material.rmaTexture.value());
+	}
+	if (m_material.normalEmTexture.has_value()) {
+		m_hasTextureCoords = true;
+		normalEmTexture = Texture(m_material.normalEmTexture.value());
+	}
+
 
 	// Create Element(/Index) Buffer Objects and Vertex Buffer Object.
 	glCreateBuffers(1, &m_ibo);

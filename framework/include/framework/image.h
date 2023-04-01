@@ -10,7 +10,7 @@ DISABLE_WARNINGS_POP()
 
 struct Image {
 public:
-    Image(const std::filesystem::path& filePath);
+    Image(const std::filesystem::path& filePath, bool shouldFlip);
 
     glm::vec3 getTexel(const glm::vec2& textureCoordinates) const;
 
