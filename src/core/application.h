@@ -25,6 +25,8 @@ DISABLE_WARNINGS_POP()
 #include "render/light/directionalLight.h"
 #include "render/light/pointLight.h"
 #include "render/light/spotLight.h"
+#include "render/effect/particleSystem.h"
+
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
@@ -80,4 +82,10 @@ private:
 
 	Shader m_shadowShader;
 	Shader m_mainShader;
+	Shader m_projectileShader;
+	Shader m_particleShader;
+
+	// particle
+	std::shared_ptr<ParticleSystem> m_particleSystem;
+	ParticleProps m_particleProps;
 };

@@ -72,6 +72,16 @@ void Application::Init()
 	shadowBuilder.addStage(GL_VERTEX_SHADER, "shaders/shadow_vert.glsl");
 	m_shadowShader = shadowBuilder.build();
 
+	ShaderBuilder projectileBuilder;
+	projectileBuilder.addStage(GL_VERTEX_SHADER, "shaders/projectile_vert.glsl");
+	projectileBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/projectile_frag.glsl");
+	m_projectileShader = projectileBuilder.build();
+
+	ShaderBuilder particleBuilder;
+	particleBuilder.addStage(GL_VERTEX_SHADER, "shaders/particle_vert.glsl");
+	particleBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/particle_frag.glsl");
+	m_particleShader = particleBuilder.build();
+
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
 	// point light
@@ -119,6 +129,9 @@ void Application::Init()
 	std::shared_ptr<XMaterial> enemyPbrMaterial = std::make_shared<XMaterial>();
 	enemyPbrMaterial->SetShader(m_mainShader);
 
+	std::shared_ptr<XMaterial> projectileMaterial = std::make_shared<XMaterial>();
+	projectileMaterial->SetShader(m_projectileShader);
+
 	// create models
 	std::shared_ptr<Model> model_room = std::make_shared<Model>(statuePbrMaterial, "resources/room.obj");
 	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
@@ -140,11 +153,21 @@ void Application::Init()
 	m_enemies.push_back(enemy_1);
 
 	// init projectile model
-	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
+	m_projectileModel = std::make_shared<Model>(projectileMaterial, "resources/projectile.obj");
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_animatedModel = std::make_shared<AnimatedModel>(statuePbrMaterial, framePaths);
+
+	// init particle system
+	m_particleSystem = std::make_shared<ParticleSystem>();
+	m_particleProps.colorBegin = glm::vec4(0.9f, 0.9f, 0.7f, 1.0f);
+	m_particleProps.colorEnd = glm::vec4(0.1f, 0.8f, 0.1f, 0.0f);
+	m_particleProps.sizeBegin = 0.5f, m_particleProps.sizeVariation = 0.3f, m_particleProps.sizeEnd = 0.0f;
+	m_particleProps.lifeTime = 5.0f;
+	m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
+	m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
+	m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
 }
 
 void Application::OnUpdate() 
@@ -226,11 +249,13 @@ void Application::ShadowRender()
 		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 		m_player->model->material->SetShader(m_shadowShader);
 		m_player->model->material->SetMatrix(modelMat, view, proj);
+		m_player->model->material->Apply();
 		m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 
 		// render animated model
 		m_animatedModel->material->SetShader(m_shadowShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+		m_animatedModel->material->Apply();
 		m_animatedModel->Render(m_directionalLight, m_pointLights,
 			m_spotLights, m_playerCam->GetPosition());
 
@@ -239,6 +264,7 @@ void Application::ShadowRender()
 		{
 			m->material->SetShader(m_shadowShader);
 			m->material->SetMatrix(glm::mat4(1), view, proj);
+			m->material->Apply();
 			m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 
@@ -249,6 +275,7 @@ void Application::ShadowRender()
 			e->model->material->SetShader(m_shadowShader);
 			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 			e->model->material->SetMatrix(modelMat_enemy, view, proj);
+			e->model->material->Apply();
 			e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 	}
@@ -277,6 +304,7 @@ void Application::MainRender()
 		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 		m_player->model->material->SetShader(m_mainShader);
 		m_player->model->material->SetMatrix(modelMat, view, proj);
+		m_player->model->material->Apply();
 		m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 		{
 			glActiveTexture(GL_TEXTURE3);
@@ -288,6 +316,7 @@ void Application::MainRender()
 		// render animated model
 		m_animatedModel->material->SetShader(m_mainShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+		m_animatedModel->material->Apply();
 		m_animatedModel->Render(m_directionalLight, m_pointLights, 
 			m_spotLights, m_playerCam->GetPosition());
 
@@ -296,8 +325,8 @@ void Application::MainRender()
 		{
 			m->material->SetShader(m_mainShader);
 			m->material->SetMatrix(glm::mat4(1), view, proj);
+			m->material->Apply();
 			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-
 			{
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
@@ -313,6 +342,7 @@ void Application::MainRender()
 			e->model->material->SetShader(m_mainShader);
 			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 			e->model->material->SetMatrix(modelMat_enemy, view, proj);
+			e->model->material->Apply();
 			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			{
 				glActiveTexture(GL_TEXTURE3);
@@ -328,8 +358,19 @@ void Application::MainRender()
 			// render projectile
 			glm::mat4 modelMat_projectile = glm::translate(glm::mat4(1), glm::vec3(p->GetPosition()));
 			p->model->material->SetMatrix(modelMat_projectile, view, proj);
+			p->model->material->Apply();
+			p->model->material->SetUniform("emissiveColor", glm::vec3(0.1, 0.8, 0.95));
 			p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
+
+		// update particles
+		m_particleSystem->Update(deltaTime);
+		// render particles
+		m_particleSystem->SetShader(m_particleShader);
+		m_particleSystem->SetModelMatrix(modelMat);
+		m_particleSystem->SetViewMatrix(view);
+		m_particleSystem->SetProjectionMatrix(proj);
+		m_particleSystem->Render();
 	}
 	
 
@@ -392,12 +433,20 @@ void Application::onKeyPressed(int key, int mods)
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
 		case GLFW_KEY_F1:
 			m_window.setMouseCapture(false);
+			break;
+		case GLFW_KEY_Q:
+			// emit particles
+			for (uint32_t i = 0; i < 5; i++)
+			{
+				m_particleSystem->Emit(m_particleProps);
+			}
+			break;
 		case GLFW_KEY_F2:
 			// spawn new enemy at random position, random position between -20 and 20
 			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
 			m_enemies.push_back(enemy);
-		
+			break;
 	}
 }
 

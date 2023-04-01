@@ -25,9 +25,6 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 		//Top-down camera angle
 		m_pitch = -90.0f;
 	}
-	else {
-		m_pitch = 0.0f;
-	}
 
 	float offsetX = -m_distanceFromPlayer * sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 	float offsetZ = -m_distanceFromPlayer * cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
