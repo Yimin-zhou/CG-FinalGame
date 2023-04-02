@@ -55,7 +55,29 @@ void Application::Init()
 	std::shared_ptr<Enemy> enemy_1 = std::make_shared<Enemy>(glm::vec3(0, 0, 0), 1.0f, 4);
 	enemy_1->model = m_enemyModel;
 	m_enemies.push_back(enemy_1);
-	
+
+	// create boss
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+
+	m_bossHeadModel = std::make_shared<Model>(defaultMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body3.obj");
+
+	m_bossHead->model = m_bossHeadModel;
+	m_bossBody_1->model = m_bossBodyModel_1;
+	m_bossBody_2->model = m_bossBodyModel_2;
+	m_bossBody_3->model = m_bossBodyModel_3;
+
+	m_bosses.push_back(m_bossHead);
+	m_bosses.push_back(m_bossBody_1);
+	m_bosses.push_back(m_bossBody_2);
+	m_bosses.push_back(m_bossBody_3);
+
+
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(defaultMaterial, "resources/projectile.obj");
 	
@@ -158,6 +180,15 @@ void Application::OnUpdate()
 			
 			m_playerCam->FollowPlayer(m_player);
 		}
+
+		// update bosses
+		for (auto& boss : m_bosses)
+		{
+			boss->Update(deltaTime, m_player->GetPosition());
+			
+		}
+		snakeJointAngle += glm::sin(deltaTime);
+
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
 		{
@@ -246,6 +277,56 @@ void Application::Render()
 	m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
 	m_animatedModel->Render();
 
+	// render boss
+	// snake
+	// head
+	int snakeLength = 4;
+
+	// create tree root (upperarm origin)
+	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 0, 1));
+	glm::vec4 origin = glm::vec4(0, 0, 0, 1);
+	glm::mat4 rotationTranslation = glm::translate(glm::mat4(1.0f), -glm::vec3(translation_snake * origin));
+	//glm::mat4 scaling_snake = glm::scale(glm::mat4(1.0f), glm::vec3(2, 1, 1));
+	glm::mat4 tMatrix = translation_snake * glm::inverse(rotationTranslation) * rotation_snake * rotationTranslation 
+			 * glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
+
+	std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(tMatrix);
+	std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+	tempObjects.push_back(root_snake);
+
+	// body
+	for (int i = 0; i < snakeLength - 1; ++i)
+	{
+		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
+		glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+		tMatrix = translation_snake * rotation_snake;
+		std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(tMatrix);
+		tempObjects[i]->addChild(node);
+		tempObjects.push_back(node);
+	}
+
+	traverse(root_snake);
+	
+	//int i = 0;
+	// render boss
+	/*for (auto& e : m_bosses)
+	{
+		if (!e->IsAlive()) continue;
+		glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		e->model->material->SetMatrix(modelMat_boss, view, proj);
+		e->model->Render();
+		i++;
+	}*/
+
+	for (int i = 0; i < snakeLength; ++i)
+	{
+		if (!m_bosses[i]->IsAlive()) continue;
+		glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+		m_bosses[i]->model->Render();
+	}
+
 	// render objects
 	for (auto& m : m_environment->models)
 	{
@@ -270,6 +351,7 @@ void Application::Render()
 		p->model->material->SetMatrix(modelMat_projectile, view, proj);
 		p->model->Render();
 	}
+
 	
 
 #if _DEBUG

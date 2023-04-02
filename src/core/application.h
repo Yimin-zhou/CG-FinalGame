@@ -27,12 +27,15 @@ DISABLE_WARNINGS_POP()
 #include "game/enemy.h"
 #include "game/projectile.h"
 #include "game/animatedModel.h"
+#include "game/ntree.h"
+#include "game/boss.h"
 
 class Application
 {
 public:
 	float deltaTime = 0;
 	float lastFrameTime;
+	float snakeJointAngle = 0;
 
 	void Init();
 	void OnUpdate();
@@ -59,6 +62,12 @@ private:
 	std::shared_ptr<Camera> m_playerCam;
 	
 	std::shared_ptr<AnimatedModel> m_animatedModel;
+
+	std::vector<std::shared_ptr<Boss>> m_bosses;
+	std::shared_ptr<Model> m_bossHeadModel;
+	std::shared_ptr<Model> m_bossBodyModel_1;
+	std::shared_ptr<Model> m_bossBodyModel_2;
+	std::shared_ptr<Model> m_bossBodyModel_3;
 
 	std::vector<std::shared_ptr<Projectile>> m_projectiles;
 	std::shared_ptr<Model> m_projectileModel;
