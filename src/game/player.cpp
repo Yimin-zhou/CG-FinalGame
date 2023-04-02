@@ -10,7 +10,8 @@ Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	m_front(glm::vec3(0.0f, 0.0f, 1.0f)),
 	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
 	m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
-	m_yaw(0.0f)
+	m_yaw(0.0f),
+	modelMatrix(glm::mat4(1.0f))
 {
 
 }
@@ -92,6 +93,11 @@ glm::vec3 Player::GetPlayerFront()
 	return m_front;
 }
 
+void Player::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch) {
+	float m_mouseSensitivity = 0.4f;
+	m_yaw -= xOffset * m_mouseSensitivity;
+}
+
 glm::vec3 Player::GetPlayerLeft()
 {
 	return m_left;
@@ -139,4 +145,59 @@ void Player::updateLeft()
 void Player::updateUp()
 {
 	m_up = glm::normalize(glm::cross(m_front, m_left));
+}
+
+glm::vec3 Player::GetMatrixPosition() {
+	return glm::vec3(modelMatrix[3]);
+}
+
+glm::vec3 Player::GetMatrixUp() {
+	return glm::normalize(glm::vec3(modelMatrix[1]));
+}
+
+glm::vec3 Player::GetMatrixFront() {
+	return glm::normalize(-glm::vec3(modelMatrix[2]));
+}
+
+glm::vec3 Player::GetMatrixLeft() {
+	return glm::normalize(glm::vec3(modelMatrix[0]));
+}
+
+void Player::MatrixMoveForward(float deltaTime) {
+	glm::vec3 movement = -GetMatrixFront() * speed * deltaTime;
+	glm::mat4 model = glm::translate(modelMatrix, movement);
+	position = glm::vec3(model * glm::vec4(position, 1.0));
+}
+
+void Player::MatrixMoveBackward(float deltaTime) {
+	glm::vec3 movement = GetMatrixFront() * speed * deltaTime;
+	glm::mat4 model = glm::translate(modelMatrix, movement);
+
+	position = glm::vec3(model * glm::vec4(position, 1.0));
+}
+
+void Player::MatrixMoveLeft(float deltaTime) {
+	glm::vec3 movement = GetMatrixLeft() * speed * deltaTime;
+	glm::mat4 model = glm::translate(modelMatrix, movement);
+
+	position = glm::vec3(model * glm::vec4(position, 1.0));
+}
+
+void Player::MatrixMoveRight(float deltaTime) {
+	glm::vec3 movement = -GetMatrixLeft() * speed * deltaTime;
+	glm::mat4 model = glm::translate(modelMatrix, movement);
+
+	position = glm::vec3(model * glm::vec4(position, 1.0));
+}
+
+void Player::MatrixRotateLeft(float deltaTime) {
+	float rotationAngle = speed * deltaTime;
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationAngle), GetPlayerUp());
+	m_yaw += rotationAngle;
+}
+
+void Player::MatrixRotateRight(float deltaTime) {
+	float rotationAngle = -speed * deltaTime;
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationAngle), GetPlayerUp());
+	m_yaw += rotationAngle;
 }

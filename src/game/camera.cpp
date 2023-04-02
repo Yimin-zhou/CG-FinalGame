@@ -43,10 +43,6 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
-void Camera::SwitchCameraMode() {
-	m_isTopDown = !m_isTopDown;
-}
-
 void Camera::Zoom(float offset)
 {
 	// zoom

@@ -49,6 +49,7 @@ Application::Application()
 	}
 
 	m_playerCam = std::make_shared<Camera>();
+	m_topDownCam = std::make_shared<TopDownCamera>();
 }
 
 void Application::Init()
@@ -61,6 +62,9 @@ void Application::Init()
 	// create a camera
 	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
 	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
+	glm::vec3 initialCameraPositionTop(0.0f, 6.0f, 0.0f);
+	m_topDownCam = std::make_shared<TopDownCamera>(initialCameraPositionTop);
+	is_topDown = false;
 
 	// build shaders
 	ShaderBuilder mainBuilder;
@@ -187,6 +191,7 @@ void Application::OnUpdate()
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
 		m_playerCam->FollowPlayer(m_player);
+		m_topDownCam->FollowPlayer(m_player);
 
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
@@ -244,20 +249,36 @@ void Application::ShadowRender()
 
 		// set player matrix & render
 		m_shadowShader.bind();
-		m_player->SetYaw(m_playerCam->GetYaw());
+		if (!is_topDown) {
+			m_player->SetYaw(m_playerCam->GetYaw());
+		}
+		else {
+			m_player->SetYaw(m_player->GetYaw());
+		}
 		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 		m_player->model->material->SetShader(m_shadowShader);
 		m_player->model->material->SetMatrix(modelMat, view, proj);
 		m_player->model->material->Apply();
-		m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+		if (!is_topDown) {
+			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+		}
+		else {
+			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+		}
 
 		// render animated model
 		m_animatedModel->material->SetShader(m_shadowShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
 		m_animatedModel->material->Apply();
-		m_animatedModel->Render(m_directionalLight, m_pointLights,
-			m_spotLights, m_playerCam->GetPosition());
+		if (!is_topDown) {
+			m_animatedModel->Render(m_directionalLight, m_pointLights,
+				m_spotLights, m_playerCam->GetPosition());
+		}
+		else {
+			m_animatedModel->Render(m_directionalLight, m_pointLights,
+				m_spotLights, m_topDownCam->GetPosition());
+		}
 
 		// render objects
 		for (auto& m : m_environment->models)
@@ -265,7 +286,12 @@ void Application::ShadowRender()
 			m->material->SetShader(m_shadowShader);
 			m->material->SetMatrix(glm::mat4(1), view, proj);
 			m->material->Apply();
-			m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) {
+				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
 		}
 
 		// render enemies
@@ -276,7 +302,12 @@ void Application::ShadowRender()
 			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 			e->model->material->SetMatrix(modelMat_enemy, view, proj);
 			e->model->material->Apply();
-			e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) {
+				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
 		}
 	}
 	// Unbind the off-screen framebuffer
@@ -294,12 +325,24 @@ void Application::MainRender()
 
 	glViewport(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
-	{
-		glm::mat4 view = m_playerCam->GetViewMatrix();
-		glm::mat4 proj = m_playerCam->GetPerspectiveMatrix(m_window);
+	{	
+		glm::mat4 view, proj;
+		if (!is_topDown) {
+			view = m_playerCam->GetViewMatrix();
+			proj = m_playerCam->GetPerspectiveMatrix(m_window);
+		}
+		else {
+			view = m_topDownCam->GetViewMatrix();
+			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
+		}
 
 		// set player matrix & render
-		m_player->SetYaw(m_playerCam->GetYaw());
+		if (!is_topDown) {
+			m_player->SetYaw(m_playerCam->GetYaw());
+		}
+		else {
+			m_player->SetYaw(m_player->GetYaw());
+		}
 		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 		m_player->model->material->SetShader(m_mainShader);
@@ -311,14 +354,25 @@ void Application::MainRender()
 			glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 			m_player->model->material->SetUniform("shadowMap", 3);
 		}
-		m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
-
+		if (!is_topDown) {
+			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+		}
+		else {
+			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+		}
+		
 		// render animated model
 		m_animatedModel->material->SetShader(m_mainShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
 		m_animatedModel->material->Apply();
-		m_animatedModel->Render(m_directionalLight, m_pointLights, 
-			m_spotLights, m_playerCam->GetPosition());
+		if (!is_topDown) {
+			m_animatedModel->Render(m_directionalLight, m_pointLights,
+				m_spotLights, m_playerCam->GetPosition());
+		}
+		else {
+			m_animatedModel->Render(m_directionalLight, m_pointLights,
+				m_spotLights, m_topDownCam->GetPosition());
+		}
 
 		// render objects
 		for (auto& m : m_environment->models)
@@ -332,7 +386,12 @@ void Application::MainRender()
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 				m->material->SetUniform("shadowMap", 3);
 			}
-			m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) {
+				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
 		}
 
 		// render enemies
@@ -349,7 +408,12 @@ void Application::MainRender()
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 				e->model->material->SetUniform("shadowMap", 3);
 			}
-			e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) {
+				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
 		}
 
 		// render projectiles
@@ -360,7 +424,12 @@ void Application::MainRender()
 			p->model->material->SetMatrix(modelMat_projectile, view, proj);
 			p->model->material->Apply();
 			p->model->material->SetUniform("emissiveColor", glm::vec3(0.1, 0.8, 0.95));
-			p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) {
+				p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
 		}
 
 		// update particles
@@ -391,19 +460,39 @@ void Application::ProcessContinousInput()
 {
 	if (glfwGetKey(m_window.getWindowHandle(), GLFW_KEY_W) == GLFW_PRESS)
 	{
-		m_player->MoveForward(deltaTime);
+		if (!is_topDown) {
+			m_player->MoveForward(deltaTime);
+		}
+		else {
+			m_player->MatrixMoveForward(deltaTime);
+		}
 	}
 	if (glfwGetKey(m_window.getWindowHandle(), GLFW_KEY_S) == GLFW_PRESS)
 	{
-		m_player->MoveBackward(deltaTime);
+		if (!is_topDown) {
+			m_player->MoveBackward(deltaTime);
+		}
+		else {
+			m_player->MatrixMoveBackward(deltaTime);
+		}
 	}
 	if (glfwGetKey(m_window.getWindowHandle(), GLFW_KEY_A) == GLFW_PRESS)
 	{
-		m_player->MoveLeft(deltaTime);
+		if (!is_topDown) {
+			m_player->MoveLeft(deltaTime);
+		}
+		else {
+			m_player->MatrixMoveLeft(deltaTime);
+		}
 	}
 	if (glfwGetKey(m_window.getWindowHandle(), GLFW_KEY_D) == GLFW_PRESS)
 	{
-		m_player->MoveRight(deltaTime);
+		if (!is_topDown) {
+			m_player->MoveRight(deltaTime);
+		}
+		else {
+			m_player->MatrixMoveRight(deltaTime);
+		}
 	}
 
 	if (glfwGetMouseButton(m_window.getWindowHandle(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && m_player->shootingTimer <= 0.0f)
@@ -427,7 +516,7 @@ void Application::onKeyPressed(int key, int mods)
 	switch (key)
 	{
 		case GLFW_KEY_C: 
-			m_playerCam->SwitchCameraMode();
+			is_topDown = !is_topDown;
 			break;
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
@@ -477,12 +566,23 @@ void Application::onMouseMove(const glm::dvec2& cursorPos)
     float sensitivity = 0.1f;
     xoffset *= sensitivity;
     yoffset *= sensitivity;
-
-	m_playerCam->ProcessMouseMovement(xoffset, yoffset,true);
+	if (!is_topDown) {
+		m_playerCam->ProcessMouseMovement(xoffset, yoffset, true);
+	}
+	else {
+		m_player->ProcessMouseMovement(xoffset, yoffset, true);
+		m_topDownCam->ProcessMouseMovement(xoffset, yoffset, true);
+	}
 }
 
 void Application::onMouseScroll(const glm::dvec2& cursorPos)
 {
+	/*if (!is_topDown) {
+		m_playerCam->ProcessMouseScroll(static_cast<float>(cursorPos.y));
+	}
+	else {
+		m_topDownCam->ProcessMouseScroll(static_cast<float>(cursorPos.y));
+	}*/
 	m_playerCam->ProcessMouseScroll(static_cast<float>(cursorPos.y));
 }
 
@@ -551,6 +651,15 @@ void Application::DebugWindows()
 	ImGui::Text("Camera Pitch: %.1f", m_playerCam->GetPitch());
 	ImGui::Text("Camera Up: %.1f %.1f %.1f", m_playerCam->GetUp().x, m_playerCam->GetUp().y, m_playerCam->GetUp().z);
 	ImGui::Text("Camera Front: %.1f %.1f %.1f", m_playerCam->GetFront().x, m_playerCam->GetFront().y, m_playerCam->GetFront().z);
+	ImGui::End();
+
+	ImGui::Begin("Camera Info");
+	ImGui::Text("TopDown Camera Position: %.1f %.1f %.1f", m_topDownCam->GetPosition().x, m_topDownCam->GetPosition().y, m_topDownCam->GetPosition().z);
+	ImGui::Text("TopDown Camera Yaw: %.1f", m_topDownCam->GetYaw());
+	ImGui::Text("TopDown Camera Pitch: %.1f", m_topDownCam->GetPitch());
+	ImGui::Text("TopDown Camera Up: %.1f %.1f %.1f", m_topDownCam->GetUp().x, m_topDownCam->GetUp().y, m_topDownCam->GetUp().z);
+	ImGui::Text("TopDown Camera Front: %.1f %.1f %.1f", m_topDownCam->GetFront().x, m_topDownCam->GetFront().y, m_topDownCam->GetFront().z);
+	ImGui::Text("TopDown Camera Right: %.1f %.1f %.1f", m_topDownCam->GetRight().x, m_topDownCam->GetRight().y, m_topDownCam->GetRight().z);
 	ImGui::End();
 
 	// projectile info

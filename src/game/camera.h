@@ -1,4 +1,4 @@
-#pragma once
+   #pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,9 +16,6 @@ public:
 
 	// Update the camera's position and orientation based on the player's position and rotation angle
 	void FollowPlayer(std::shared_ptr<Player> player);
-
-	//Switch camera mode
-	void SwitchCameraMode();
 
 	void Zoom(float offset);
 
