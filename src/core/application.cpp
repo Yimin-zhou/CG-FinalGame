@@ -83,7 +83,7 @@ void Application::Init()
 	m_particleShader = particleBuilder.build();
 
 	// setup lights
-	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
+	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
 	// point light
 	std::shared_ptr<PointLight> pointLight_1 = std::make_shared<PointLight>(glm::vec3(10.0f, 5.0f, -10.0f),
 		glm::vec3(0.95f, 0.2f, 0.9f), 100.0f, 1.0f, 0.2f, 0.2f);
@@ -120,8 +120,14 @@ void Application::Init()
 	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
 
 	// create materials
-	std::shared_ptr<XMaterial> statuePbrMaterial = std::make_shared<XMaterial>();
-	statuePbrMaterial->SetShader(m_mainShader);
+	std::shared_ptr<XMaterial> roomPbrMaterial = std::make_shared<XMaterial>();
+	roomPbrMaterial->SetShader(m_mainShader);
+
+	std::shared_ptr<XMaterial> floorPbrMaterial = std::make_shared<XMaterial>();
+	floorPbrMaterial->SetShader(m_mainShader);
+
+	std::shared_ptr<XMaterial> wallPbrMaterial = std::make_shared<XMaterial>();
+	wallPbrMaterial->SetShader(m_mainShader);
 
 	std::shared_ptr<XMaterial> playerPbrMaterial = std::make_shared<XMaterial>();
 	playerPbrMaterial->SetShader(m_mainShader);
@@ -133,13 +139,15 @@ void Application::Init()
 	projectileMaterial->SetShader(m_projectileShader);
 
 	// create models
-	std::shared_ptr<Model> model_room = std::make_shared<Model>(statuePbrMaterial, "resources/room.obj");
-	std::shared_ptr<Model> model_statue = std::make_shared<Model>(statuePbrMaterial, "resources/statue/statue.obj");
+	std::shared_ptr<Model> model_room = std::make_shared<Model>(roomPbrMaterial, "resources/room/room.obj");
+	std::shared_ptr<Model> model_floor= std::make_shared<Model>(floorPbrMaterial, "resources/floor/floor.obj");
+	std::shared_ptr<Model> model_wall = std::make_shared<Model>(wallPbrMaterial, "resources/wall/wall.obj");
 
 	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
 	models.push_back(model_room);
-	models.push_back(model_statue);
+	models.push_back(model_floor);
+	models.push_back(model_wall);
 	m_environment = std::make_shared<Environment>(models);
 
 	// create player
@@ -157,7 +165,7 @@ void Application::Init()
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(statuePbrMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(roomPbrMaterial, framePaths);
 
 	// init particle system
 	m_particleSystem = std::make_shared<ParticleSystem>();
@@ -285,7 +293,7 @@ void Application::ShadowRender()
 
 void Application::MainRender()
 {
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);

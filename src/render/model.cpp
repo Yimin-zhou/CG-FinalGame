@@ -8,16 +8,13 @@ Model::~Model()
 void Model::InitTextures()
 {
 	// set up textures for pbr shader
-	if (mesh.kdTexture.has_value() && mesh.rmaTexture.has_value()
-		&& mesh.normalEmTexture.has_value())
+	if (mesh.kdTexture.has_value() && mesh.rmaTexture.has_value())
 	{
 		Texture* albedo = new Texture(std::move(mesh.kdTexture.value()));
-		Texture* rma = new Texture(std::move(mesh.rmaTexture.value())); // roughness, metalness, ambient occlusion
-		Texture* normalEm = new Texture(std::move(mesh.normalEmTexture.value())); // normal, emissive
+		Texture* rma = new Texture(std::move(mesh.rmaTexture.value())); // roughness, metalness, ambient occlusion, emissive
 
 		material->SetAlbedo(albedo);
 		material->SetRma(rma);
-		material->SetNormalEm(normalEm);
 	}
 }
 
@@ -31,6 +28,7 @@ void Model::Render(std::shared_ptr<DirectionalLight> dirLight,
 	std::vector<std::shared_ptr<SpotLight>>& spotLights,
 	const glm::vec3& camPos)
 {
+	// TODO comment this out
 	material->SetUniform("roughnessMultiplier", 1.0f);
 	material->SetUniform("baseColor", glm::vec3(1));
 	material->SetUniform("lightColor", glm::vec3(0.2, 0.2, 1.0));

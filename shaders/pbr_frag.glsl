@@ -3,17 +3,16 @@
 
 layout(location = 4) uniform mat4 lightSpaceMatrix;
 
-layout(location = 5) uniform sampler2D albedoMap; // albedo, opacity, (srgb)
+layout(location = 5) uniform sampler2D albedoMap; // albedo, emissive, (srgb)
 layout(location = 6) uniform sampler2D rmaMap; // roughness, metalness, ambient occlusion
-layout(location = 7) uniform sampler2D normalEmMap; // normal, emissive
-layout(location = 8) uniform sampler2D shadowMap;
+layout(location = 7) uniform sampler2D shadowMap;
 
-layout(location = 9) uniform float roughnessMultiplier;
-layout(location = 10) uniform vec3 baseColor;
-layout(location = 11) uniform vec3 lightColor;
-layout(location = 12) uniform vec3 emissiveColor;
+layout(location = 8) uniform float roughnessMultiplier;
+layout(location = 9) uniform vec3 baseColor;
+layout(location = 10) uniform vec3 lightColor;
+layout(location = 11) uniform vec3 emissiveColor;
 
-layout(location = 13) uniform vec3 cameraPos;
+layout(location = 12) uniform vec3 cameraPos;
 
 in vec3 fragPosition;
 in vec3 fragNormal;
@@ -87,21 +86,6 @@ vec3 computeBitangent()
     float r = 1.0 / (duv1.x * duv2.y - duv1.y * duv2.x);
     vec3 bitangent = (dp2 * duv1.x - dp1 * duv2.x) * r;
     return normalize(bitangent);
-}
-
-vec3 getTBNNormal()
-{
-    vec3 texNormal = texture(normalEmMap, fragTexCoord).rgb;
-    texNormal = normalize(texNormal * 2.0 - 1.0);   ; // unpack
-    texNormal.xy *= 1.5;
-    texNormal = normalize(texNormal);
-
-    vec3 tangent = computeTangent();
-    vec3 bitangent = computeBitangent();
-
-    vec3 TBN_normal = normalize(mat3(tangent, bitangent, texNormal) * texNormal);
-    
-    return TBN_normal;
 }
 
 // learnopengl: https://learnopengl.com/PBR/Theory
@@ -229,11 +213,11 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 albedo, float roughness
 void main()
 {
     vec3 albedo     = pow(texture(albedoMap, fragTexCoord).rgb, vec3(2.2)) * baseColor; // srgb texture, remove gamma correction, cause ligth is cauculated in linear
-    vec3 normal     = getTBNNormal(); // TODO not used yet
+    vec3 normal     = fragNormal;
     float roughness = texture(rmaMap, fragTexCoord).r * roughnessMultiplier;
     float metallic  = texture(rmaMap, fragTexCoord).g;
     float ao        = texture(rmaMap, fragTexCoord).b;
-    vec3 emissive   = texture(normalEmMap, fragTexCoord).a * emissiveColor * 0;
+    vec3 emissive   = texture(rmaMap, fragTexCoord).a * vec3(1.0, 0.1, 0.1) * 10;
 
     vec3 N = normalize(fragNormal);
     vec3 V = normalize(cameraPos - fragPosition);
@@ -284,6 +268,20 @@ void main()
 
     // indirect
     vec3 ambient = vec3(0.1) * albedo * ao; // TODO
+
+    // IBL (image based lighting)
+//    vec3 R = reflect(-V, N);
+//    float mipLevel = roughness * float(mipCount - 1);
+//    vec3 prefilteredColor = textureLod(prefilterMap, R, mipLevel).rgb;
+//    vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+//    vec3 irradiance = texture(irradianceMap, N).rgb;
+//    vec3 diffuse = irradiance * albedo;
+//    vec3 specular = prefilteredColor * (F0 * envBRDF.x + envBRDF.y);
+//    Lo += (diffuse + specular) * ao;
+
+
+
+
     vec3 color = ambient + Lo + emissive;
 	
     color = color / (color + vec3(1.0));

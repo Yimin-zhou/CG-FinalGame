@@ -141,11 +141,6 @@ void XMaterial::Apply()
 		m_rma->bind(GL_TEXTURE1);
 		SetUniform("rmaMap", 1);
 	}
-	if(m_normalEm != nullptr)
-	{
-		m_normalEm->bind(GL_TEXTURE2);
-		SetUniform("normalEmMap", 2);
-	}
 }
 
 XMaterial::XMaterial() :

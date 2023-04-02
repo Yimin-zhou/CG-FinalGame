@@ -69,7 +69,6 @@ private:
 	std::shared_ptr<Model> m_enemyModel;
 	std::vector<std::shared_ptr<Enemy>> m_enemies;
 
-	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
 	std::shared_ptr<DirectionalLight> m_directionalLight;
 	std::vector<std::shared_ptr<PointLight>> m_pointLights;
