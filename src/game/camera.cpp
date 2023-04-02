@@ -46,6 +46,40 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 	m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
+void Camera::FollowPlayerAlongBezierCurve(std::shared_ptr<Player> player, const BezierCurve& cameraPath, float t)
+{
+    // Evaluate the position on the Bézier curve
+    glm::vec3 curvePosition = cameraPath.evaluate(t);
+
+    // Calculate the offset vector based on the player's position and the curve position
+    glm::vec3 offset = curvePosition - player->GetPosition();
+
+    // Apply the offset to the camera's position
+    m_position = player->GetPosition() + offset;
+
+    // Update the camera's orientation to look at the player's position
+    m_front = glm::normalize(player->GetPosition() - m_position);
+    m_right = glm::normalize(glm::cross(m_front, m_worldUp));
+    m_up = glm::normalize(glm::cross(m_right, m_front));
+}
+
+void Camera::FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> player, const CompositeBezierCurve& cameraPath, float t)
+{
+	// Evaluate the position on the composite Bézier curve
+	glm::vec3 curvePosition = cameraPath.GetPoint(t);
+
+	// Calculate the offset vector based on the player's position and the curve position
+	glm::vec3 offset = curvePosition - player->GetPosition();
+
+	// Apply the offset to the camera's position
+	m_position = player->GetPosition() + offset;
+
+	// Update the camera's orientation to look at the player's position
+	m_front = glm::normalize(player->GetPosition() - m_position);
+	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
+	m_up = glm::normalize(glm::cross(m_right, m_front));
+}
+
 void Camera::SwitchCameraMode() {
 	m_isTopDown = !m_isTopDown;
 }

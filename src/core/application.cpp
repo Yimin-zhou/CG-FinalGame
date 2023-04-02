@@ -139,12 +139,50 @@ void Application::Init()
 	enemy_1->model = m_enemyModel;
 	m_enemies.push_back(enemy_1);
 
+	// create boss
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+
+	m_bossHeadModel = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body3.obj");
+
+	m_bossHead->model = m_bossHeadModel;
+	m_bossBody_1->model = m_bossBodyModel_1;
+	m_bossBody_2->model = m_bossBodyModel_2;
+	m_bossBody_3->model = m_bossBodyModel_3;
+
+	m_bosses.push_back(m_bossHead);
+	m_bosses.push_back(m_bossBody_1);
+	m_bosses.push_back(m_bossBody_2);
+	m_bosses.push_back(m_bossBody_3);
+
+
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
-
+	
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(statuePbrMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(enemyPbrMaterial, framePaths);
+
+	// startTrailer
+	m_trailerPlaying = true;
+	m_trailerStartTime = static_cast<float>(glfwGetTime());
+
+	// set curve points for plotting the trace of the camera
+	std::vector<glm::vec3> m_points;
+}
+
+void createCameraControlPoints(std::shared_ptr <Player> m_player, glm::vec3 controlPoints[4]) {
+	
+	controlPoints[0] = m_player->GetPosition() + glm::vec3(5.0f, 8.0f, 7.0f);
+	controlPoints[1] = controlPoints[0] + m_player->GetPlayerFront() * 2.0f;
+	controlPoints[2] = controlPoints[0] + m_player->GetPlayerFront() * 4.0f + m_player->GetPlayerLeft() * 2.0f;
+	controlPoints[3] = controlPoints[0] + m_player->GetPlayerFront() * 6.0f;
+	
 }
 
 void Application::OnUpdate() 
@@ -163,7 +201,75 @@ void Application::OnUpdate()
 		// Player
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
-		m_playerCam->FollowPlayer(m_player);
+		//m_playerCam->FollowPlayer(m_player);
+		
+		if (m_trailerPlaying)
+		{
+			glm::vec3 curve1[4];
+			createCameraControlPoints(m_player, curve1);
+			BezierCurve cameraPath1(curve1[0], curve1[1], curve1[2], curve1[3]);
+
+			for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
+				glm::vec3 point = cameraPath1.evaluate(t);
+				m_points.push_back(point);
+			}
+
+			glm::vec3 curve2[4];
+			// Control points for the second curve (connects smoothly to the first curve)
+			curve2[0] = curve1[3];
+			curve2[1] = curve2[0] + glm::vec3(-12.0f, 39.0f, 6.0f);
+			curve2[2] = curve2[0] + glm::vec3(-3.0f, 17.0f, -5.0f);
+			curve2[3] = curve2[0] + glm::vec3(10.0f, 9.0f, 10.0f);
+			
+			BezierCurve cameraPath2(curve2[0], curve2[1], curve2[2], curve2[3]);
+
+			for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
+				glm::vec3 point = cameraPath2.evaluate(t);
+				m_points.push_back(point);
+			}
+			std::vector<BezierCurve> curves = { cameraPath1, cameraPath2 };
+			CompositeBezierCurve cameraPath(curves);
+			float trailerDuration = 4.0f; // Duration of the trailer in seconds	
+			float elapsedTime = currentTime - m_trailerStartTime; 
+			
+			float t = fmod(currentTime - m_trailerStartTime, trailerDuration) / trailerDuration;
+			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath1, t);
+			m_playerCam->FollowPlayerAlongCompositeBezierCurve(m_player, cameraPath, t);
+			if (elapsedTime >= trailerDuration)
+			{
+				m_trailerPlaying = false;
+			}
+		}
+		else
+		{
+			// Move at cosntant speed along Bézier curve
+			//glm::vec3 bezierCurve[4];
+			//createCameraControlPoints(m_player, bezierCurve);
+
+			//BezierCurve cameraPath(bezierCurve[0], bezierCurve[1], bezierCurve[2], bezierCurve[3]);
+			//int numSamples = 1000;
+			//std::vector<float> arcLengthTable = cameraPath.generateArcLengthTable(numSamples);
+
+			//float trailerDuration = 11.0f; // Duration of the trailer in seconds
+			//float elapsedTime = currentTime - m_trailerStartTime;
+
+			//// Move at constant speed along Bézier curve
+			//float currentarclength = elapsedTime / trailerDuration; // normalize the elapsed time to range [0, 1]
+			//float t = cameraPath.findTForArcLength(arcLengthTable, currentarclength); // find the corresponding 't' value for the given arc length
+
+			////// Set the position of the camera
+			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath, t);
+			
+			m_playerCam->FollowPlayer(m_player);
+		}
+
+		// update bosses
+		for (auto& boss : m_bosses)
+		{
+			boss->Update(deltaTime, m_player->GetPosition());
+			
+		}
+		snakeJointAngle += glm::sin(deltaTime);
 
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
@@ -261,16 +367,104 @@ void Application::MainRender()
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// // Create a VBO to store the points
+	// GLuint vbo;
+	// glGenBuffers(1, &vbo);
+	// glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// glBufferData(GL_ARRAY_BUFFER, m_points.size() * sizeof(glm::vec3), &m_points[0], GL_STATIC_DRAW);
+
+	// // Create a VAO to define the vertex layout
+	// GLuint vao;
+	// glGenVertexArrays(1, &vao);
+	// glBindVertexArray(vao);
+	// glEnableVertexAttribArray(0);
+	// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+	// // Render the points
+	// glPointSize(15.0f);
+	// glBindVertexArray(vao);
+	// glDrawArrays(GL_POINTS, 0, m_points.size());
+
+	// // Clean up
+	// glDeleteBuffers(1, &vbo);
+	// glDeleteVertexArrays(1, &vao);
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glEnable(GL_CULL_FACE);
 
 	glViewport(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
-	{
-		glm::mat4 view = m_playerCam->GetViewMatrix();
-		glm::mat4 proj = m_playerCam->GetPerspectiveMatrix(m_window);
 
+	glm::mat4 view = m_playerCam->GetViewMatrix();
+	glm::mat4 proj = m_playerCam->GetPerspectiveMatrix(m_window);
+
+	// set player matrix & render
+	m_player->SetYaw(m_playerCam->GetYaw());
+	glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
+	modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
+	m_player->model->material->SetMatrix(modelMat, view, proj);
+	m_player->model->Render(m_directionalLight, m_pointLights,
+		m_spotLights, m_playerCam->GetPosition());
+
+	// render animated model
+	m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+	m_animatedModel->Render(m_directionalLight, m_pointLights,
+		m_spotLights, m_playerCam->GetPosition());
+
+	// render boss
+	// snake
+	// head
+	int snakeLength = 4;
+
+	// create tree root (upperarm origin)
+	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 0, 1));
+	glm::vec4 origin = glm::vec4(0, 0, 0, 1);
+	glm::mat4 rotationTranslation = glm::translate(glm::mat4(1.0f), -glm::vec3(translation_snake * origin));
+	//glm::mat4 scaling_snake = glm::scale(glm::mat4(1.0f), glm::vec3(2, 1, 1));
+	glm::mat4 tMatrix = translation_snake * glm::inverse(rotationTranslation) * rotation_snake * rotationTranslation 
+			 * glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
+
+	std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(tMatrix);
+	std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+	tempObjects.push_back(root_snake);
+
+	// body
+	for (int i = 0; i < snakeLength - 1; ++i)
+	{
+		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
+		glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+		tMatrix = translation_snake * rotation_snake;
+		std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(tMatrix);
+		tempObjects[i]->addChild(node);
+		tempObjects.push_back(node);
+	}
+
+	traverse(root_snake);
+	
+	//int i = 0;
+	// render boss
+	/*for (auto& e : m_bosses)
+	{
+		if (!e->IsAlive()) continue;
+		glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		e->model->material->SetMatrix(modelMat_boss, view, proj);
+		e->model->Render();
+		i++;
+	}*/
+
+	for (int i = 0; i < snakeLength; ++i)
+	{
+		if (!m_bosses[i]->IsAlive()) continue;
+		glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+		m_bosses[i]->model->Render(m_directionalLight, m_pointLights,
+			m_spotLights, m_playerCam->GetPosition());
+	}
+
+	// render objects
+	{
 		// set player matrix & render
 		m_player->SetYaw(m_playerCam->GetYaw());
 		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
@@ -331,6 +525,7 @@ void Application::MainRender()
 			p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 	}
+
 	
 
 #if _DEBUG
