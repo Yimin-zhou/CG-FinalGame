@@ -105,7 +105,6 @@ void Application::OnUpdate()
 			createCameraControlPoints(m_player, curve1);
 			BezierCurve cameraPath1(curve1[0], curve1[1], curve1[2], curve1[3]);
 
-			
 			for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
 				glm::vec3 point = cameraPath1.evaluate(t);
 				m_points.push_back(point);
@@ -126,17 +125,37 @@ void Application::OnUpdate()
 			}
 			std::vector<BezierCurve> curves = { cameraPath1, cameraPath2 };
 			CompositeBezierCurve cameraPath(curves);
-			float trailerDuration = 7.0f; // Duration of the trailer in seconds
+			float trailerDuration = 4.0f; // Duration of the trailer in seconds	
+			float elapsedTime = currentTime - m_trailerStartTime; 
+			
 			float t = fmod(currentTime - m_trailerStartTime, trailerDuration) / trailerDuration;
 			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath1, t);
 			m_playerCam->FollowPlayerAlongCompositeBezierCurve(m_player, cameraPath, t);
-			if (currentTime - m_trailerStartTime >= trailerDuration)
+			if (elapsedTime >= trailerDuration)
 			{
 				m_trailerPlaying = false;
 			}
 		}
 		else
 		{
+			// Move at cosntant speed along Bézier curve
+			//glm::vec3 bezierCurve[4];
+			//createCameraControlPoints(m_player, bezierCurve);
+
+			//BezierCurve cameraPath(bezierCurve[0], bezierCurve[1], bezierCurve[2], bezierCurve[3]);
+			//int numSamples = 1000;
+			//std::vector<float> arcLengthTable = cameraPath.generateArcLengthTable(numSamples);
+
+			//float trailerDuration = 11.0f; // Duration of the trailer in seconds
+			//float elapsedTime = currentTime - m_trailerStartTime;
+
+			//// Move at constant speed along Bézier curve
+			//float currentarclength = elapsedTime / trailerDuration; // normalize the elapsed time to range [0, 1]
+			//float t = cameraPath.findTForArcLength(arcLengthTable, currentarclength); // find the corresponding 't' value for the given arc length
+
+			////// Set the position of the camera
+			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath, t);
+			
 			m_playerCam->FollowPlayer(m_player);
 		}
 		// update enemies, delete dead enemies

@@ -19,7 +19,7 @@ public:
 	void FollowPlayer(std::shared_ptr<Player> player);
 	void FollowPlayerAlongBezierCurve(std::shared_ptr<Player> player, const BezierCurve& cameraPath, float t);
 	void FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> player, const CompositeBezierCurve& cameraPath, float t);
-	
+
 	void Zoom(float offset);
 
 	// Returns the view matrix calculated using the Euler angles and the lookAt matrix
