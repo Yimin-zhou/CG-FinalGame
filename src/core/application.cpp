@@ -145,10 +145,10 @@ void Application::Init()
 	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 
-	m_bossHeadModel = std::make_shared<Model>(defaultMaterial, "resources/boss/Head.obj");
-	m_bossBodyModel_1 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body.obj");
-	m_bossBodyModel_2 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body2.obj");
-	m_bossBodyModel_3 = std::make_shared<Model>(defaultMaterial, "resources/boss/Body3.obj");
+	m_bossHeadModel = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body3.obj");
 
 	m_bossHead->model = m_bossHeadModel;
 	m_bossBody_1->model = m_bossBodyModel_1;
@@ -162,11 +162,11 @@ void Application::Init()
 
 
 	// init projectile model
-	m_projectileModel = std::make_shared<Model>(defaultMaterial, "resources/projectile.obj");
+	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
 	
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(defaultMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(enemyPbrMaterial, framePaths);
 
 	// startTrailer
 	m_trailerPlaying = true;
@@ -404,11 +404,13 @@ void Application::MainRender()
 	glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 	modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
 	m_player->model->material->SetMatrix(modelMat, view, proj);
-	m_player->model->Render();
+	m_player->model->Render(m_directionalLight, m_pointLights,
+		m_spotLights, m_playerCam->GetPosition());
 
 	// render animated model
 	m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-	m_animatedModel->Render();
+	m_animatedModel->Render(m_directionalLight, m_pointLights,
+		m_spotLights, m_playerCam->GetPosition());
 
 	// render boss
 	// snake
@@ -457,7 +459,8 @@ void Application::MainRender()
 		if (!m_bosses[i]->IsAlive()) continue;
 		glm::mat4 modelMat_boss = tempObjects[i]->transform;
 		m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
-		m_bosses[i]->model->Render();
+		m_bosses[i]->model->Render(m_directionalLight, m_pointLights,
+			m_spotLights, m_playerCam->GetPosition());
 	}
 
 	// render objects

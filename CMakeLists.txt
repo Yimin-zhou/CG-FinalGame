@@ -19,7 +19,6 @@ add_executable(FinalProject
 	"src/render/xmaterial.cpp"
 	"src/render/environment.cpp"
 	"src/render/model.cpp"
-	"src/game/level.cpp"
  	"src/main.cpp" 
 	"src/game/camera.cpp" 
 	"src/game/player.cpp" 

@@ -21,7 +21,7 @@ void AnimatedModel::Render(std::shared_ptr<DirectionalLight> dirLight,
 	std::vector<std::shared_ptr<SpotLight>>& spotLights,
 	const glm::vec3& camPos)
 {
-	m_frames[currentFrame]->Render(dirLight, pointLights,spotLights, camPos);
+	frames[m_currentFrame]->Render(dirLight, pointLights,spotLights, camPos);
 }
 
 AnimatedModel::AnimatedModel()
