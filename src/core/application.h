@@ -21,7 +21,10 @@ DISABLE_WARNINGS_POP()
 
 #pragma once
 
-#include "game/level.h"
+#include "render/environment.h"
+#include "render/light/directionalLight.h"
+#include "render/light/pointLight.h"
+#include "render/light/spotLight.h"
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
@@ -39,7 +42,8 @@ public:
 
 	void Init();
 	void OnUpdate();
-	void Render();
+	void ShadowRender();
+	void MainRender();
 	void ProcessContinousInput();
 
 	void onKeyPressed(int key, int mods);
@@ -76,6 +80,18 @@ private:
 
 	// std::shared_ptr<Level> m_level;
 	std::shared_ptr<Environment> m_environment;
-
+	
 	std::vector<glm::vec3> m_points;
+
+	std::shared_ptr<DirectionalLight> m_directionalLight;
+	std::vector<std::shared_ptr<PointLight>> m_pointLights;
+	std::vector<std::shared_ptr<SpotLight>> m_spotLights;
+
+	// shadow mapping
+	GLuint m_shadowTex;
+	GLuint m_shadowMapFBO;
+	std::shared_ptr<Camera> m_shadowCam;
+
+	Shader m_shadowShader;
+	Shader m_mainShader;
 };

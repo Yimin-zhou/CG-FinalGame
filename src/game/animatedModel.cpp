@@ -16,9 +16,12 @@ void AnimatedModel::Update(float deltaTime)
 
 }
 
-void AnimatedModel::Render()
+void AnimatedModel::Render(std::shared_ptr<DirectionalLight> dirLight,
+	std::vector<std::shared_ptr<PointLight>>& pointLights,
+	std::vector<std::shared_ptr<SpotLight>>& spotLights,
+	const glm::vec3& camPos)
 {
-	frames[m_currentFrame]->Render();
+	m_frames[currentFrame]->Render(dirLight, pointLights,spotLights, camPos);
 }
 
 AnimatedModel::AnimatedModel()

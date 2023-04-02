@@ -3,7 +3,7 @@ project(ComputerGraphics C CXX)
 
 # Set this before including framework such that it knows to use the OpenGL4.5 version of GLAD
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/framework")
-	# Create framework library and include CMake scripts (compiler warnings, sanitizers and static analyzers).
+	# Create framework library and include CMake scripts (compiler warnings, sanid:\Programming\Assignments\CG\CG-FinalGame\CMakeLists.txttizers and static analyzers).
 	add_subdirectory("framework")
 else()
 	# During development the framework lives in parent folder.
@@ -20,7 +20,21 @@ add_executable(FinalProject
 	"src/render/environment.cpp"
 	"src/render/model.cpp"
 	"src/game/level.cpp"
- "src/main.cpp" "src/game/camera.cpp" "src/game/player.cpp" "src/game/enemy.cpp" "src/game/projectile.cpp"  "src/game/animatedModel.cpp" "src/game/bezierCurve.cpp" "src/game/compositeBezier.cpp" "src/game/ntree.h" "src/game/boss.cpp")
+ 	"src/main.cpp" 
+	"src/game/camera.cpp" 
+	"src/game/player.cpp" 
+	"src/game/enemy.cpp" 
+	"src/game/projectile.cpp"  
+	"src/game/animatedModel.cpp" 
+	"src/game/bezierCurve.cpp" 
+	"src/game/compositeBezier.cpp" 
+	"src/game/ntree.h" 
+	"src/game/boss.cpp"
+	"src/render/light/light.cpp" 
+	"src/render/light/directionalLight.cpp" 
+	"src/render/light/pointLight.cpp" 
+	"src/render/light/spotLight.cpp")
+	
 target_compile_features(FinalProject PRIVATE cxx_std_20)
 target_link_libraries(FinalProject PRIVATE CGFramework)
 enable_sanitizers(FinalProject)

@@ -27,6 +27,8 @@ public:
     bool hasTextureCoords() const;
     
     std::optional<Texture> kdTexture;
+    std::optional<Texture> rmaTexture;
+    std::optional<Texture> normalEmTexture;
     // for version below C++17 use experimental::optional (and uncomment include above)
     // std::experimental::optional<Texture> kdTexture;
 

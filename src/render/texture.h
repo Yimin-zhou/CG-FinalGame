@@ -14,6 +14,7 @@ struct ImageLoadingException : public std::runtime_error {
 
 class Texture {
 public:
+    Texture(std::filesystem::path filePath, bool shouldFlip);
     Texture(std::filesystem::path filePath);
     Texture(Image cpuTexture);
     Texture(const Texture&) = delete;
