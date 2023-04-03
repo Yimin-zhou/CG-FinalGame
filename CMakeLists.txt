@@ -35,7 +35,7 @@ add_executable(FinalProject
 	"src/render/light/spotLight.cpp"
 	"src/render/effect/particleSystem.cpp"
 	"src/helper/random.cpp" 
-	"src/game/topDownCamera.cpp")
+	"src/game/topDownCamera.cpp" "src/render/effect/postprocessing.cpp")
 target_compile_features(FinalProject PRIVATE cxx_std_20)
 target_link_libraries(FinalProject PRIVATE CGFramework)
 enable_sanitizers(FinalProject)

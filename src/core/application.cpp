@@ -330,6 +330,7 @@ void Application::OnUpdate()
 		// render scene
 		ShadowRender();
 		MainRender();
+		PostProcssing();
 		lastFrameTime = currentTime;
 	}
 }
@@ -622,6 +623,12 @@ void Application::MainRender()
 	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
 	ImGui::End();
 #endif
+
+}
+
+void Application::PostProcssing()
+{
+
 
 	m_window.swapBuffers();
 }
