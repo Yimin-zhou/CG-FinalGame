@@ -1,10 +1,11 @@
-#pragma once
+   #pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <framework/window.h>
 
+#include "compositeBezier.h"
 #include "player.h"
 
 class Camera 
@@ -16,9 +17,8 @@ public:
 
 	// Update the camera's position and orientation based on the player's position and rotation angle
 	void FollowPlayer(std::shared_ptr<Player> player);
-
-	//Switch camera mode
-	void SwitchCameraMode();
+	void FollowPlayerAlongBezierCurve(std::shared_ptr<Player> player, const BezierCurve& cameraPath, float t);
+	void FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> player, const CompositeBezierCurve& cameraPath, float t);
 
 	void Zoom(float offset);
 

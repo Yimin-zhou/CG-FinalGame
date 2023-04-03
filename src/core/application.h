@@ -32,12 +32,16 @@ DISABLE_WARNINGS_POP()
 #include "game/enemy.h"
 #include "game/projectile.h"
 #include "game/animatedModel.h"
+#include "game/topDownCamera.h"
+#include "game/ntree.h"
+#include "game/boss.h"
 
 class Application
 {
 public:
 	float deltaTime = 0;
 	float lastFrameTime;
+	float snakeJointAngle = 0;
 
 	void Init();
 	void OnUpdate();
@@ -58,11 +62,20 @@ public:
 	Application();
 
 private:
+	bool m_trailerPlaying = false;
+	float m_trailerStartTime = -1.0f;
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
+	std::shared_ptr<TopDownCamera> m_topDownCam;
 	
 	std::shared_ptr<AnimatedModel> m_animatedModel;
+
+	std::vector<std::shared_ptr<Boss>> m_bosses;
+	std::shared_ptr<Model> m_bossHeadModel;
+	std::shared_ptr<Model> m_bossBodyModel_1;
+	std::shared_ptr<Model> m_bossBodyModel_2;
+	std::shared_ptr<Model> m_bossBodyModel_3;
 
 	std::vector<std::shared_ptr<Projectile>> m_projectiles;
 	std::shared_ptr<Model> m_projectileModel;
@@ -70,6 +83,9 @@ private:
 	std::vector<std::shared_ptr<Enemy>> m_enemies;
 
 	std::shared_ptr<Environment> m_environment;
+	
+	std::vector<glm::vec3> m_points;
+
 	std::shared_ptr<DirectionalLight> m_directionalLight;
 	std::vector<std::shared_ptr<PointLight>> m_pointLights;
 	std::vector<std::shared_ptr<SpotLight>> m_spotLights;
@@ -87,4 +103,6 @@ private:
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
 	ParticleProps m_particleProps;
+
+	bool is_topDown = false;
 };
