@@ -42,7 +42,7 @@ public:
 	float deltaTime = 0;
 	float lastFrameTime;
 	float snakeJointAngle = 0;
-
+	
 	void Init();
 	void OnUpdate();
 	void ShadowRender();

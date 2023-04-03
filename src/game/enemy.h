@@ -14,10 +14,15 @@ public:
 	float speed;
 	uint32_t health = 100;
 	bool isDead = false;
+	float yaw;
 
 	Enemy(const glm::vec3& position, float speed, uint32_t health);
 
 	void Update(float deltaTime, const glm::vec3& playerPosition);
+
+	void FacePlayer(const glm::vec3& playerPosition);
+
+	void UpdateEnemyVectors();
 
 	void TakeDamage(float damage);
 
@@ -29,6 +34,9 @@ public:
 
 	glm::vec3 GetPosition() const;
 
+	float GetYaw() const;
+
+	glm::mat4 GetModelMatrix();
 private:
 
 };

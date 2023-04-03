@@ -14,11 +14,15 @@ public:
 	float speed;
 	uint32_t health = 100;
 	bool isDead = false;
-	//std::vector<std::shared_ptr<ObjectNode>> tempObjects;
-
+	float yaw;
+    
 	Boss(const glm::vec3& position, float speed, uint32_t health);
 
 	void Update(float deltaTime, const glm::vec3& playerPosition);
+
+	void FacePlayer(const glm::vec3& playerPosition);
+
+	void UpdateBossVectors();
 
 	void TakeDamage(float damage);
 
@@ -29,6 +33,10 @@ public:
 	uint32_t GetHealth() const;
 
 	glm::vec3 GetPosition() const;
+
+	glm::mat4 GetModelMatrix();
+
+	float GetYaw() const;
 
 private:
 
