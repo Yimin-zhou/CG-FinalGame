@@ -43,7 +43,7 @@ Application::Application()
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// Set X-Toon Shading Texture
-		m_toonTexture = Texture("resources/toon_map.png", false);
+		//m_toonTexture = Texture("resources/default.png", false); //TODO 
 
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
@@ -83,7 +83,7 @@ void Application::Init()
 	m_particleShader = particleBuilder.build();
 
 	ShaderBuilder xToonShader;
-	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/vertex.glsl");
+	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/xtoon_vert.glsl");
 	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
 	m_xToonShader = xToonShader.build();
 
@@ -574,25 +574,29 @@ void Application::MainRender()
 		// render enemies
 		for (auto& e : m_enemies)
 		{
-			if (!e->IsAlive()) continue;
-			e->model->material->SetShader(m_mainShader);
-			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
-			e->model->material->SetMatrix(modelMat_enemy, view, proj);
-			e->model->material->Apply();
-			e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			if (!m_player->is_abilityOn){
+				if (!e->IsAlive()) continue;
+				e->model->material->SetShader(m_mainShader);
+				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+				e->model->material->SetMatrix(modelMat_enemy, view, proj);
+				e->model->material->Apply();
+				e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 				e->model->material->SetUniform("shadowMap", 3);
 			}
 			else {
-				e->model->material->SetUniform("viewPos", m_playerCam->GetPosition());
-				e->model->material->SetUniform("lightPos", m_directionalLight->getPosition());
+				if (!e->IsAlive()) continue;
+				e->model->material->SetShader(m_xToonShader);
+				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+				e->model->material->SetMatrix(modelMat_enemy, view, proj);
+				e->model->material->Apply();
+				//m_toonTexture.bind(GL_TEXTURE4); // TODO TOON MAP
+				e->model->material->SetUniform("toonMap", 4);
+				e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
+				e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());
 				//e->model->material->SetUniform("distanceOffset", );
 				//e->model->material->SetUniform("distanceScale", );
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, m_toonTexture.m_texture);
-				e->model->material->SetUniform("toonMap", 0);
 			}
 			if (!is_topDown) {
 				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());

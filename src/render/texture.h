@@ -26,11 +26,11 @@ public:
     Texture& operator=(Texture&&) = default;
 
     void bind(GLint textureSlot);
-    GLuint m_texture { INVALID };
 
 private:
     void initialize(Image cpuTexture);
 
 private:
     static constexpr GLuint INVALID = 0xFFFFFFFF;
+    GLuint m_texture { INVALID };
 };

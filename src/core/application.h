@@ -103,8 +103,8 @@ private:
 	Shader m_projectileShader;
 	Shader m_particleShader;
 	Shader m_xToonShader;
-	GLuint m_texToon;
-	Texture m_toonTexture;
+	//GLuint m_texToon;
+	//Texture m_toonTexture;
 
 	bool ability_on = false;
 	float ability_time = 0;
