@@ -47,9 +47,6 @@ Application::Application()
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-
-	m_playerCam = std::make_shared<Camera>();
-	m_topDownCam = std::make_shared<TopDownCamera>();
 }
 
 void Application::Init()
@@ -162,10 +159,10 @@ void Application::Init()
 	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 
-	m_bossHeadModel = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Head.obj");
-	m_bossBodyModel_1 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body.obj");
-	m_bossBodyModel_2 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body2.obj");
-	m_bossBodyModel_3 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body3.obj");
+	m_bossHeadModel = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body3.obj");
 
 	m_bossHead->model = m_bossHeadModel;
 	m_bossBody_1->model = m_bossBodyModel_1;
@@ -176,7 +173,6 @@ void Application::Init()
 	m_bosses.push_back(m_bossBody_1);
 	m_bosses.push_back(m_bossBody_2);
 	m_bosses.push_back(m_bossBody_3);
-
 
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(projectileMaterial, "resources/projectile.obj");
@@ -194,7 +190,6 @@ void Application::Init()
 	m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
 	m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
-	m_projectileModel = std::make_shared<Model>(enemyPbrMaterial, "resources/projectile.obj");
 
 	// startTrailer
 	m_trailerPlaying = true;
@@ -229,7 +224,6 @@ void Application::OnUpdate()
 		// Player
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
-		m_playerCam->FollowPlayer(m_player);
 		m_topDownCam->FollowPlayer(m_player);
 		
 		if (m_trailerPlaying)
@@ -416,6 +410,10 @@ void Application::ShadowRender()
 				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 			}
 		}
+
+		// render boss
+
+
 	}
 	// Unbind the off-screen framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -454,85 +452,51 @@ void Application::MainRender()
 
 	glViewport(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
-
-	glm::mat4 view, proj;
-	if (!is_topDown) 
 	{
-		view = m_playerCam->GetViewMatrix();
-		proj = m_playerCam->GetPerspectiveMatrix(m_window);
-	}
-	else 
-	{
-		view = m_topDownCam->GetViewMatrix();
-		proj = m_topDownCam->GetPerspectiveMatrix(m_window);
-	}
+		glm::mat4 view, proj;
+		if (!is_topDown) 
+		{
+			view = m_playerCam->GetViewMatrix();
+			proj = m_playerCam->GetPerspectiveMatrix(m_window);
+		}
+		else 
+		{
+			view = m_topDownCam->GetViewMatrix();
+			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
+		}
 
-	// set player matrix & render
-	m_player->SetYaw(m_playerCam->GetYaw());
-	glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
-	modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
-	m_player->model->material->SetMatrix(modelMat, view, proj);
-	m_player->model->Render(m_directionalLight, m_pointLights,
-		m_spotLights, m_playerCam->GetPosition());
+		//// render boss
+		//int snakeLength = 4;
+		//// create tree root (upperarm origin)
+		//glm::mat4 bossModelMat = glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
+		//std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
+		//std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+		//tempObjects.push_back(root_snake);
 
-	// render animated model
-	m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-	m_animatedModel->Render(m_directionalLight, m_pointLights,
-		m_spotLights, m_playerCam->GetPosition());
+		//// body
+		//for (int i = 0; i < snakeLength - 1; ++i)
+		//{
+		//	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
+		//	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+		//	bossModelMat = translation_snake * rotation_snake;
+		//	std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
+		//	tempObjects[i]->addChild(node);
+		//	tempObjects.push_back(node);
+		//}
+		//traverse(root_snake);
 
-	// render boss
-	// snake
-	// head
-	int snakeLength = 4;
+		//for (int i = 0; i < snakeLength; ++i)
+		//{
+		//	if (!m_bosses[i]->IsAlive()) continue;
+		//	glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		//	m_bosses[i]->model->material->SetShader(m_mainShader);
+		//	m_bosses[i]->model->material->Apply();
+		//	m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+		//	m_bosses[i]->model->Render(m_directionalLight, m_pointLights,
+		//		m_spotLights, m_playerCam->GetPosition());
+		//}
 
-	// create tree root (upperarm origin)
-	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 0, 1));
-	glm::vec4 origin = glm::vec4(0, 0, 0, 1);
-	glm::mat4 rotationTranslation = glm::translate(glm::mat4(1.0f), -glm::vec3(translation_snake * origin));
-	//glm::mat4 scaling_snake = glm::scale(glm::mat4(1.0f), glm::vec3(2, 1, 1));
-	glm::mat4 tMatrix = translation_snake * glm::inverse(rotationTranslation) * rotation_snake * rotationTranslation 
-			 * glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
 
-	std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(tMatrix);
-	std::vector<std::shared_ptr<ObjectNode>> tempObjects;
-	tempObjects.push_back(root_snake);
-
-	// body
-	for (int i = 0; i < snakeLength - 1; ++i)
-	{
-		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
-		glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
-		tMatrix = translation_snake * rotation_snake;
-		std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(tMatrix);
-		tempObjects[i]->addChild(node);
-		tempObjects.push_back(node);
-	}
-
-	traverse(root_snake);
-	
-	//int i = 0;
-	// render boss
-	/*for (auto& e : m_bosses)
-	{
-		if (!e->IsAlive()) continue;
-		glm::mat4 modelMat_boss = tempObjects[i]->transform;
-		e->model->material->SetMatrix(modelMat_boss, view, proj);
-		e->model->Render();
-		i++;
-	}*/
-
-	for (int i = 0; i < snakeLength; ++i)
-	{
-		if (!m_bosses[i]->IsAlive()) continue;
-		glm::mat4 modelMat_boss = tempObjects[i]->transform;
-		m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
-		m_bosses[i]->model->Render(m_directionalLight, m_pointLights,
-			m_spotLights, m_playerCam->GetPosition());
-	}
-
-	// render objects
-	{
 		// set player matrix & render
 		if (!is_topDown) {
 			m_player->SetYaw(m_playerCam->GetYaw());
@@ -551,10 +515,12 @@ void Application::MainRender()
 			glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 			m_player->model->material->SetUniform("shadowMap", 3);
 		}
-		if (!is_topDown) {
+		if (!is_topDown) 
+		{
 			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
-		else {
+		else 
+		{
 			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 		}
 		
@@ -562,6 +528,12 @@ void Application::MainRender()
 		m_animatedModel->material->SetShader(m_mainShader);
 		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
 		m_animatedModel->material->Apply();
+		m_animatedModel->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+		{
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+			m_animatedModel->material->SetUniform("shadowMap", 3);
+		}
 		if (!is_topDown) {
 			m_animatedModel->Render(m_directionalLight, m_pointLights,
 				m_spotLights, m_playerCam->GetPosition());
