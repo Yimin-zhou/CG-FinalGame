@@ -579,11 +579,20 @@ void Application::MainRender()
 			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 			e->model->material->SetMatrix(modelMat_enemy, view, proj);
 			e->model->material->Apply();
-			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-			{
+			e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			if (!m_player->is_abilityOn){
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 				e->model->material->SetUniform("shadowMap", 3);
+			}
+			else {
+				e->model->material->SetUniform("viewPos", m_playerCam->GetPosition());
+				e->model->material->SetUniform("lightPos", m_directionalLight->getPosition());
+				//e->model->material->SetUniform("distanceOffset", );
+				//e->model->material->SetUniform("distanceScale", );
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, m_toonTexture.m_texture);
+				e->model->material->SetUniform("toonMap", 0);
 			}
 			if (!is_topDown) {
 				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());

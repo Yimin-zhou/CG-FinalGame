@@ -4,8 +4,8 @@
 layout(location = 1) uniform vec3 viewPos;
 layout(location = 2) uniform vec3 lightPos;
 layout(location = 3) uniform sampler2D toonMap;
-layout(location = 5) uniform float distanceOffset;
-layout(location = 6) uniform float distanceScale;
+//layout(location = 5) uniform float distanceOffset;
+//layout(location = 6) uniform float distanceScale;
 
 // Output for on-screen color
 layout(location = 0) out vec4 outColor;
@@ -34,6 +34,8 @@ void main()
 
     // Calculate the distance between the viewer and the fragment
     float distance = length(viewPos - fragPos);
+    float distanceOffset = 0;
+    float distanceScale = 1;
     float scaledDistance = (distance + distanceOffset) * distanceScale;
 
     // Sample the texture using brightness and scaled distance
