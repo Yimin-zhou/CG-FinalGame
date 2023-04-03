@@ -1,7 +1,10 @@
 #include "application.h"
 
 Application::Application()
-	: m_window("Final Project", glm::ivec2(1920, 1080),OpenGLVersion::GL45)
+	: m_window("Final Project", glm::ivec2(1920, 1080),OpenGLVersion::GL45),
+	m_playerCam(std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, -1.0f))),
+	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 6.0f, 0.0f))),
+	is_topDown(false)
 {
 	m_window.registerKeyCallback(
 		[this](int key, int scancode, int action, int mods) {
@@ -47,13 +50,6 @@ Application::Application()
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-
-	// create a camera
-	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
-	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
-	glm::vec3 initialCameraPositionTop(0.0f, 6.0f, 0.0f);
-	m_topDownCam = std::make_shared<TopDownCamera>(initialCameraPositionTop);
-	is_topDown = false;
 }
 
 void Application::Init()
