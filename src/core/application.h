@@ -100,6 +100,7 @@ private:
 	Shader m_mainShader;
 	Shader m_projectileShader;
 	Shader m_particleShader;
+	Shader m_xToonShader;
 
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;

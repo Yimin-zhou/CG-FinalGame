@@ -65,8 +65,6 @@ Application::Application()
 		glTextureParameteri(texToon, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(texToon, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
-
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
@@ -103,6 +101,11 @@ void Application::Init()
 	particleBuilder.addStage(GL_VERTEX_SHADER, "shaders/particle_vert.glsl");
 	particleBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/particle_frag.glsl");
 	m_particleShader = particleBuilder.build();
+
+	ShaderBuilder xToonShader;
+	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/vertex.glsl");
+	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
+	m_xToonShader = xToonShader.build();
 
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
