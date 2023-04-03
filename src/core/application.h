@@ -25,11 +25,14 @@ DISABLE_WARNINGS_POP()
 #include "render/light/directionalLight.h"
 #include "render/light/pointLight.h"
 #include "render/light/spotLight.h"
+#include "render/effect/particleSystem.h"
+
 #include "game/player.h"
 #include "game/camera.h"
 #include "game/enemy.h"
 #include "game/projectile.h"
 #include "game/animatedModel.h"
+#include "game/topDownCamera.h"
 #include "game/ntree.h"
 #include "game/boss.h"
 
@@ -64,6 +67,7 @@ private:
 	Window m_window;
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
+	std::shared_ptr<TopDownCamera> m_topDownCam;
 	
 	std::shared_ptr<AnimatedModel> m_animatedModel;
 
@@ -94,4 +98,12 @@ private:
 
 	Shader m_shadowShader;
 	Shader m_mainShader;
+	Shader m_projectileShader;
+	Shader m_particleShader;
+
+	// particle
+	std::shared_ptr<ParticleSystem> m_particleSystem;
+	ParticleProps m_particleProps;
+
+	bool is_topDown = false;
 };

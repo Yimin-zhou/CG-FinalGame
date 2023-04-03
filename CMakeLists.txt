@@ -19,7 +19,7 @@ add_executable(FinalProject
 	"src/render/xmaterial.cpp"
 	"src/render/environment.cpp"
 	"src/render/model.cpp"
- 	"src/main.cpp" 
+	"src/main.cpp" 
 	"src/game/camera.cpp" 
 	"src/game/player.cpp" 
 	"src/game/enemy.cpp" 
@@ -32,8 +32,10 @@ add_executable(FinalProject
 	"src/render/light/light.cpp" 
 	"src/render/light/directionalLight.cpp" 
 	"src/render/light/pointLight.cpp" 
-	"src/render/light/spotLight.cpp")
-	
+	"src/render/light/spotLight.cpp"
+	"src/render/effect/particleSystem.cpp"
+	"src/helper/random.cpp" 
+	"src/game/topDownCamera.cpp")
 target_compile_features(FinalProject PRIVATE cxx_std_20)
 target_link_libraries(FinalProject PRIVATE CGFramework)
 enable_sanitizers(FinalProject)

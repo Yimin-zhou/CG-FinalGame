@@ -1,4 +1,4 @@
-#pragma once
+   #pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,9 +19,6 @@ public:
 	void FollowPlayer(std::shared_ptr<Player> player);
 	void FollowPlayerAlongBezierCurve(std::shared_ptr<Player> player, const BezierCurve& cameraPath, float t);
 	void FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> player, const CompositeBezierCurve& cameraPath, float t);
-
-	//Switch camera mode
-	void SwitchCameraMode();
 
 	void Zoom(float offset);
 

@@ -31,11 +31,10 @@ void Model::Render(std::shared_ptr<DirectionalLight> dirLight,
 	std::vector<std::shared_ptr<SpotLight>>& spotLights,
 	const glm::vec3& camPos)
 {
-	material->Apply();
 	material->SetUniform("roughnessMultiplier", 1.0f);
 	material->SetUniform("baseColor", glm::vec3(1));
 	material->SetUniform("lightColor", glm::vec3(0.2, 0.2, 1.0));
-	material->SetUniform("emissiveColor", glm::vec3(1.0, 0.2, 0.2));
+	//material->SetUniform("emissiveColor", glm::vec3(1.0, 0.2, 0.2));
 	material->SetUniform("cameraPos", camPos);
 
 	// set up directional light

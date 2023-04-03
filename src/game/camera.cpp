@@ -25,9 +25,6 @@ void Camera::FollowPlayer(std::shared_ptr<Player> player)
 		//Top-down camera angle
 		m_pitch = -90.0f;
 	}
-	else {
-		m_pitch = 0.0f;
-	}
 
 	float offsetX = -m_distanceFromPlayer * sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 	float offsetZ = -m_distanceFromPlayer * cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
@@ -78,10 +75,6 @@ void Camera::FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> playe
 	m_front = glm::normalize(player->GetPosition() - m_position);
 	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
 	m_up = glm::normalize(glm::cross(m_right, m_front));
-}
-
-void Camera::SwitchCameraMode() {
-	m_isTopDown = !m_isTopDown;
 }
 
 void Camera::Zoom(float offset)
