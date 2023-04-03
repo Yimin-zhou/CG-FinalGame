@@ -48,22 +48,21 @@ Application::Application()
 		stbi_uc* pixels = stbi_load("resources/toon_map.png", &width, &height, &sourceNumChannels, STBI_rgb);
 
 		// Create a texture on the GPU with 3 channels with 8 bits each.
-		GLuint texToon;
-		glCreateTextures(GL_TEXTURE_2D, 1, &texToon);
-		glTextureStorage2D(texToon, 1, GL_RGB8, width, height);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_texToon);
+		glTextureStorage2D(m_texToon, 1, GL_RGB8, width, height);
 
 		// Upload pixels into the GPU texture.
-		glTextureSubImage2D(texToon, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		glTextureSubImage2D(m_texToon, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 		// Free the CPU memory after we copied the image to the GPU.
 		stbi_image_free(pixels);
 
 		// Set behavior for when texture coordinates are outside the [0, 1] range.
-		glTextureParameteri(texToon, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(texToon, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_texToon, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_texToon, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		// Set interpolation for texture sampling (GL_NEAREST for no interpolation).
-		glTextureParameteri(texToon, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(texToon, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(m_texToon, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_texToon, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
@@ -708,6 +707,19 @@ void Application::ProcessContinousInput()
 	}
 }
 
+void Application::change2XToonShader() {
+	// TO-DO: set a timer
+	m_xToonShader.bind();
+
+
+	// === SET YOUR X-TOON UNIFORMS HERE ===
+	// Values that you may want to pass to the shader are stored in light, shadingData and cameraPos and texToon.
+	/*glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texToon);
+	glUniform1i(2, 0);*/ 
+	// Change 2 to the uniform index that you want to use.
+	//render();
+}
 
 void Application::onKeyPressed(int key, int mods) 
 {
@@ -715,6 +727,10 @@ void Application::onKeyPressed(int key, int mods)
 	{
 		case GLFW_KEY_C: 
 			is_topDown = !is_topDown;
+			break;
+		case GLFW_KEY_E:
+			change2XToonShader();
+			std::cout << "special abilities" << std::endl;
 			break;
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);

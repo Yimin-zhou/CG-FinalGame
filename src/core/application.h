@@ -59,6 +59,8 @@ public:
 	const std::vector<std::string> loadFramePaths(const std::string& folderPath);
 
 	void DebugWindows();
+	
+	void change2XToonShader();
 
 	Application();
 
@@ -101,6 +103,7 @@ private:
 	Shader m_projectileShader;
 	Shader m_particleShader;
 	Shader m_xToonShader;
+	GLuint m_texToon;
 
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
