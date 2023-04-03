@@ -55,13 +55,8 @@ Application::Application()
 	}
 }
 
-void Application::Init()
+void Application::InitShader()
 {
-	// set window as full screen but not borderless
-	m_window.setBorderedFullScreen();
-	// set mouse mode
-	m_window.setMouseCapture(true);
-
 	// build shaders
 	ShaderBuilder mainBuilder;
 	mainBuilder.addStage(GL_VERTEX_SHADER, "shaders/pbr_vert.glsl");
@@ -86,7 +81,10 @@ void Application::Init()
 	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/xtoon_vert.glsl");
 	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
 	m_xToonShader = xToonShader.build();
+}
 
+void Application::InitLight()
+{
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
 	// point light
@@ -120,45 +118,74 @@ void Application::Init()
 	m_spotLights.push_back(spotLight_2);
 	m_spotLights.push_back(spotLight_3);
 	m_spotLights.push_back(spotLight_4);
+}
 
-	// create a camera for shadow mapping
-	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
+std::shared_ptr<XMaterial> Application::InitMaterial(Shader& shader)
+{
+	std::shared_ptr<XMaterial> material = std::make_shared<XMaterial>();
+	material->SetShader(shader);
+	return material;
+}
 
-	// create materials
-	std::shared_ptr<XMaterial> floorPbrMaterial = std::make_shared<XMaterial>();
-	floorPbrMaterial->SetShader(m_mainShader);
-
-	std::shared_ptr<XMaterial> wallPbrMaterial = std::make_shared<XMaterial>();
-	wallPbrMaterial->SetShader(m_mainShader);
-
-	std::shared_ptr<XMaterial> playerPbrMaterial = std::make_shared<XMaterial>();
-	playerPbrMaterial->SetShader(m_mainShader);
-
-	std::shared_ptr<XMaterial> enemyPbrMaterial = std::make_shared<XMaterial>();
-	enemyPbrMaterial->SetShader(m_mainShader);
-
-	std::shared_ptr<XMaterial> projectileMaterial = std::make_shared<XMaterial>();
-	projectileMaterial->SetShader(m_projectileShader);
-
+void Application::InitModel()
+{
 	// create models
-	std::shared_ptr<Model> model_floor= std::make_shared<Model>(floorPbrMaterial, "resources/floor/floor.obj");
-	std::shared_ptr<Model> model_wall = std::make_shared<Model>(wallPbrMaterial, "resources/wall/wall.obj");
+	std::shared_ptr<Model> model_floor = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/floor/floor.obj");
+	std::shared_ptr<Model> model_wall = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/wall/wall.obj");
 
 	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
 	models.push_back(model_floor);
 	models.push_back(model_wall);
 	m_environment = std::make_shared<Environment>(models);
+}
+
+void Application::InitEnemies(std::shared_ptr<XMaterial> material, uint32_t enemyCount)
+{
+	// create enemies
+	m_enemyModel = std::make_shared<Model>(material, "resources/enemy/enemy.obj");
+
+	// Create and store enemies
+	for (int i = 0; i < enemyCount; ++i) 
+	{
+		// random position between -40 and 40
+		float x = (rand() % 80) - 40;
+		float z = (rand() % 80) - 40;
+		auto enemy = std::make_shared<Enemy>(glm::vec3(x, 0, z), 2.0f, 4);
+		enemy->model = m_enemyModel;
+		m_enemies.push_back(enemy);
+	}
+}
+
+void Application::Init()
+{
+	// set window as full screen but not borderless
+	m_window.setBorderedFullScreen();
+	// set mouse mode
+	m_window.setMouseCapture(true);
+
+	// init shader
+	InitShader();
+
+	// init lights
+	InitLight();
+
+	// create a camera for shadow mapping
+	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
+
+	// 1 material -> multiple objects
+	std::shared_ptr<XMaterial> enemyPbrMaterial = InitMaterial(m_mainShader);
+	std::shared_ptr<XMaterial> projectilePbrMaterial = InitMaterial(m_projectileShader);
+
+	// init models with unique materials
+	InitModel();
 
 	// create player
 	m_player = std::make_shared<Player>(glm::vec3(0.0f, 0.0f, 0.0f), 7.0f);
-	m_player->model = std::make_shared<Model>(playerPbrMaterial, "resources/player/player.obj");
+	m_player->model = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/player/player.obj");
 
 	// create enemies
-	m_enemyModel = std::make_shared<Model>(enemyPbrMaterial, "resources/enemy/enemy.obj");
-	std::shared_ptr<Enemy> enemy_1 = std::make_shared<Enemy>(glm::vec3(0, 0, 0), 1.0f, 4);
-	enemy_1->model = m_enemyModel;
-	m_enemies.push_back(enemy_1);
+	InitEnemies(enemyPbrMaterial, 10);
 
 	// create boss
 	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
@@ -182,7 +209,7 @@ void Application::Init()
 	m_bosses.push_back(m_bossBody_3);
 
 	// init projectile model
-	m_projectileModel = std::make_shared<Model>(projectileMaterial, "resources/projectile.obj");
+	m_projectileModel = std::make_shared<Model>(projectilePbrMaterial, "resources/projectile.obj");
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");

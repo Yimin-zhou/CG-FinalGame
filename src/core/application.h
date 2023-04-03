@@ -44,11 +44,19 @@ public:
 	float lastFrameTime;
 	float snakeJointAngle = 0;
 
+	void InitShader();
+	void InitLight();
+	std::shared_ptr<XMaterial> InitMaterial(Shader& shader);
+	void InitModel();
+	void InitEnemies(std::shared_ptr<XMaterial> material, uint32_t enemyCount);
+	void InitBosses(std::shared_ptr<XMaterial> material);
+
 	void Init();
 	void OnUpdate();
 	void ShadowRender();
 	void MainRender();
 	void ProcessContinousInput();
+
 
 	void onKeyPressed(int key, int mods);
 	void onKeyReleased(int key, int mods);
