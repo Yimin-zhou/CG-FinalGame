@@ -19,7 +19,7 @@ Image::Image(const std::filesystem::path& filePath, bool shouldFlip)
 
 	const auto filePathStr = filePath.string(); // Create l-value so c_str() is safe.
 	[[maybe_unused]] int numChannelsInSourceImage;
-	stbi_uc* stbPixels = stbi_load(filePathStr.c_str(), &width, &height, &numChannelsInSourceImage, STBI_rgb);
+	stbi_uc* stbPixels = stbi_load(filePathStr.c_str(), &width, &height, &numChannelsInSourceImage, 4);
 
 	// flip image vertically
 	stbi_set_flip_vertically_on_load(shouldFlip);
@@ -29,15 +29,15 @@ Image::Image(const std::filesystem::path& filePath, bool shouldFlip)
 		throw std::exception();
 	}
 
-	constexpr size_t numChannels = 3; // STBI_rgb == 3 channels
+	constexpr size_t numChannels = 4; // STBI_rgb == 3 channels
 	for (size_t i = 0; i < width * height * numChannels; i += numChannels) {
-            pixels.emplace_back(stbPixels[i + 0] / 255.0f, stbPixels[i + 1] / 255.0f, stbPixels[i + 2] / 255.0f);
+            pixels.emplace_back(stbPixels[i + 0] / 255.0f, stbPixels[i + 1] / 255.0f, stbPixels[i + 2] / 255.0f, stbPixels[i + 3] / 255.0f);
 	}
 
 	stbi_image_free(stbPixels);
 }
 
-glm::vec3 Image::getTexel(const glm::vec2& textureCoordinates) const
+glm::vec4 Image::getTexel(const glm::vec2& textureCoordinates) const
 {
 #ifdef HIDE_SOLUTION
 	// TODO: read the correct pixel from m_pixels.

@@ -4,6 +4,7 @@
 DISABLE_WARNINGS_PUSH()
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 DISABLE_WARNINGS_POP()
 #include <filesystem>
 #include <vector>
@@ -12,9 +13,9 @@ struct Image {
 public:
     Image(const std::filesystem::path& filePath, bool shouldFlip);
 
-    glm::vec3 getTexel(const glm::vec2& textureCoordinates) const;
+    glm::vec4 getTexel(const glm::vec2& textureCoordinates) const;
 
 public:
     int width, height;
-    std::vector<glm::vec3> pixels;
+    std::vector<glm::vec4> pixels;
 };
