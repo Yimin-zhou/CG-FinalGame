@@ -3,11 +3,9 @@
 // Global variables for lighting calculations
 layout(location = 1) uniform vec3 viewPos;
 layout(location = 2) uniform vec3 lightPos;
-layout(location = 3) uniform vec3 lightColor;
-layout(location = 4) uniform sampler2D toonMap;
-layout(location = 5) uniform float shininess;
-layout(location = 6) uniform float distanceOffset;
-layout(location = 7) uniform float distanceScale;
+layout(location = 3) uniform sampler2D toonMap;
+layout(location = 5) uniform float distanceOffset;
+layout(location = 6) uniform float distanceScale;
 
 // Output for on-screen color
 layout(location = 0) out vec4 outColor;
@@ -28,7 +26,8 @@ void main()
 
     // Calculate the Blinn-Phong specular term
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+    //float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+    float spec = 0;
 
     // Calculate brightness without Toon effects
     float brightness = diffuse + spec;

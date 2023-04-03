@@ -43,26 +43,7 @@ Application::Application()
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// Set X-Toon Shading Texture
-		// Load image from disk to CPU memory.
-		int width, height, sourceNumChannels; // Number of channels in source image. pixels will always be the requested number of channels (3).
-		stbi_uc* pixels = stbi_load("resources/toon_map.png", &width, &height, &sourceNumChannels, STBI_rgb);
-
-		// Create a texture on the GPU with 3 channels with 8 bits each.
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_texToon);
-		glTextureStorage2D(m_texToon, 1, GL_RGB8, width, height);
-
-		// Upload pixels into the GPU texture.
-		glTextureSubImage2D(m_texToon, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-		// Free the CPU memory after we copied the image to the GPU.
-		stbi_image_free(pixels);
-
-		// Set behavior for when texture coordinates are outside the [0, 1] range.
-		glTextureParameteri(m_texToon, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(m_texToon, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		// Set interpolation for texture sampling (GL_NEAREST for no interpolation).
-		glTextureParameteri(m_texToon, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_texToon, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		m_toonTexture = Texture("resources/toon_map.png", false);
 
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
@@ -708,17 +689,10 @@ void Application::ProcessContinousInput()
 }
 
 void Application::change2XToonShader() {
-	// TO-DO: set a timer
-	m_xToonShader.bind();
-
-
-	// === SET YOUR X-TOON UNIFORMS HERE ===
-	// Values that you may want to pass to the shader are stored in light, shadingData and cameraPos and texToon.
-	/*glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_texToon);
-	glUniform1i(2, 0);*/ 
-	// Change 2 to the uniform index that you want to use.
-	//render();
+	if (m_player->abilityTimer <= 0) {
+		m_player->is_abilityOn = true;
+		m_player->abilityTimer = m_player->abilityInterval;
+	}
 }
 
 void Application::onKeyPressed(int key, int mods) 
@@ -730,7 +704,6 @@ void Application::onKeyPressed(int key, int mods)
 			break;
 		case GLFW_KEY_E:
 			change2XToonShader();
-			std::cout << "special abilities" << std::endl;
 			break;
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
@@ -856,6 +829,7 @@ void Application::DebugWindows()
 	ImGui::Text("Player Up: %.1f %.1f %.1f", m_player->GetPlayerUp().x, m_player->GetPlayerUp().y, m_player->GetPlayerUp().z);
 	ImGui::Text("Player Front: %.1f %.1f %.1f", m_player->GetPlayerFront().x, m_player->GetPlayerFront().y, m_player->GetPlayerFront().z);
 	ImGui::Text("Player Left: %.1f %.1f %.1f", m_player->GetPlayerLeft().x, m_player->GetPlayerLeft().y, m_player->GetPlayerLeft().z);
+	ImGui::Text("Player Ability On: %s", m_player->is_abilityOn ? "true" : "false");
 	ImGui::End();
 
 	// camera info

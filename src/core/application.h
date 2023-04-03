@@ -104,6 +104,10 @@ private:
 	Shader m_particleShader;
 	Shader m_xToonShader;
 	GLuint m_texToon;
+	Texture m_toonTexture;
+
+	bool ability_on = false;
+	float ability_time = 0;
 
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
