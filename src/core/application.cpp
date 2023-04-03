@@ -47,6 +47,13 @@ Application::Application()
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
+	// create a camera
+	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
+	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
+	glm::vec3 initialCameraPositionTop(0.0f, 6.0f, 0.0f);
+	m_topDownCam = std::make_shared<TopDownCamera>(initialCameraPositionTop);
+	is_topDown = false;
 }
 
 void Application::Init()
@@ -55,13 +62,6 @@ void Application::Init()
 	m_window.setBorderedFullScreen();
 	// set mouse mode
 	m_window.setMouseCapture(true);
-
-	// create a camera
-	glm::vec3 initialCameraPosition(0.0f, 0.0f, -1.0f);
-	m_playerCam = std::make_shared<Camera>(initialCameraPosition);
-	glm::vec3 initialCameraPositionTop(0.0f, 6.0f, 0.0f);
-	m_topDownCam = std::make_shared<TopDownCamera>(initialCameraPositionTop);
-	is_topDown = false;
 
 	// build shaders
 	ShaderBuilder mainBuilder;
@@ -167,10 +167,10 @@ void Application::Init()
 	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
 
-	m_bossHeadModel = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Head.obj");
-	m_bossBodyModel_1 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body.obj");
-	m_bossBodyModel_2 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body2.obj");
-	m_bossBodyModel_3 = std::make_shared<Model>(statuePbrMaterial, "resources/boss/Body3.obj");
+	m_bossHeadModel = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body3.obj");
 
 	m_bossHead->model = m_bossHeadModel;
 	m_bossBody_1->model = m_bossBodyModel_1;
@@ -207,7 +207,8 @@ void Application::Init()
 	std::vector<glm::vec3> m_points;
 }
 
-void createCameraControlPoints(std::shared_ptr <Player> m_player, glm::vec3 controlPoints[4]) {
+void createCameraControlPoints(std::shared_ptr <Player> m_player, glm::vec3 controlPoints[4]) 
+{
 	
 	controlPoints[0] = m_player->GetPosition() + glm::vec3(5.0f, 8.0f, 7.0f);
 	controlPoints[1] = controlPoints[0] + m_player->GetPlayerFront() * 2.0f;
