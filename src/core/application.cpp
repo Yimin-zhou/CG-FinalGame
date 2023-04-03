@@ -42,6 +42,31 @@ Application::Application()
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+		// Set X-Toon Shading Texture
+		// Load image from disk to CPU memory.
+		int width, height, sourceNumChannels; // Number of channels in source image. pixels will always be the requested number of channels (3).
+		stbi_uc* pixels = stbi_load("resources/toon_map.png", &width, &height, &sourceNumChannels, STBI_rgb);
+
+		// Create a texture on the GPU with 3 channels with 8 bits each.
+		GLuint texToon;
+		glCreateTextures(GL_TEXTURE_2D, 1, &texToon);
+		glTextureStorage2D(texToon, 1, GL_RGB8, width, height);
+
+		// Upload pixels into the GPU texture.
+		glTextureSubImage2D(texToon, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		// Free the CPU memory after we copied the image to the GPU.
+		stbi_image_free(pixels);
+
+		// Set behavior for when texture coordinates are outside the [0, 1] range.
+		glTextureParameteri(texToon, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(texToon, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		// Set interpolation for texture sampling (GL_NEAREST for no interpolation).
+		glTextureParameteri(texToon, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(texToon, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);

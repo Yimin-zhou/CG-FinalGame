@@ -13,6 +13,7 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 #include <framework/shader.h>
 #include <framework/window.h>
+#include <stb/stb_image.h>
 
 #include <functional>
 #include <iostream>
