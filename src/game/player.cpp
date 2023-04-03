@@ -6,6 +6,8 @@ Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	health(100),
 	shootingInterval(0.2f),
 	shootingTimer(0.0f),
+	abilityTimer(0.0f),
+	abilityInterval(5.0f),
 	model(),
 	m_front(glm::vec3(0.0f, 0.0f, 1.0f)),
 	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
@@ -24,6 +26,7 @@ Player::Player()
 void Player::Update(float deltaTime)
 {
 	SetShootingTimer(deltaTime);
+	SetAbilityTimer(deltaTime);
 }
 
 void Player::MoveForward(float deltaTime)
@@ -81,6 +84,14 @@ void Player::SetYaw(float yaw)
 void Player::SetShootingTimer(float deltaTime)
 {
 	shootingTimer -= deltaTime;
+}
+
+void Player::SetAbilityTimer(float deltaTime) 
+{
+	abilityTimer -= deltaTime;
+	if (abilityTimer <= 0) {
+		is_abilityOn = false;
+	}
 }
 
 glm::vec3 Player::GetPlayerUp()

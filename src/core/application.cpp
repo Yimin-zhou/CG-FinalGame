@@ -42,6 +42,9 @@ Application::Application()
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+		// Set X-Toon Shading Texture
+		m_toonTexture = std::make_shared<Texture>("resources/toon_map.png", false); //TODO 
+
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
@@ -78,6 +81,11 @@ void Application::Init()
 	particleBuilder.addStage(GL_VERTEX_SHADER, "shaders/particle_vert.glsl");
 	particleBuilder.addStage(GL_FRAGMENT_SHADER, "shaders/particle_frag.glsl");
 	m_particleShader = particleBuilder.build();
+
+	ShaderBuilder xToonShader;
+	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/xtoon_vert.glsl");
+	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
+	m_xToonShader = xToonShader.build();
 
 	// setup lights
 	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
@@ -566,16 +574,29 @@ void Application::MainRender()
 		// render enemies
 		for (auto& e : m_enemies)
 		{
-			if (!e->IsAlive()) continue;
-			e->model->material->SetShader(m_mainShader);
-			glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
-			e->model->material->SetMatrix(modelMat_enemy, view, proj);
-			e->model->material->Apply();
-			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-			{
+			if (!m_player->is_abilityOn){
+				if (!e->IsAlive()) continue;
+				e->model->material->SetShader(m_mainShader);
+				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+				e->model->material->SetMatrix(modelMat_enemy, view, proj);
+				e->model->material->Apply();
+				e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
 				e->model->material->SetUniform("shadowMap", 3);
+			}
+			else {
+				if (!e->IsAlive()) continue;
+				e->model->material->SetShader(m_xToonShader);
+				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+				e->model->material->SetMatrix(modelMat_enemy, view, proj);
+				e->model->material->Apply();
+				m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
+				e->model->material->SetUniform("toonMap", 4);
+				e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
+				e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());
+				//e->model->material->SetUniform("distanceOffset", );
+				//e->model->material->SetUniform("distanceScale", );
 			}
 			if (!is_topDown) {
 				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
@@ -680,6 +701,12 @@ void Application::ProcessContinousInput()
 	}
 }
 
+void Application::change2XToonShader() {
+	if (m_player->abilityTimer <= 0) {
+		m_player->is_abilityOn = true;
+		m_player->abilityTimer = m_player->abilityInterval;
+	}
+}
 
 void Application::onKeyPressed(int key, int mods) 
 {
@@ -687,6 +714,9 @@ void Application::onKeyPressed(int key, int mods)
 	{
 		case GLFW_KEY_C: 
 			is_topDown = !is_topDown;
+			break;
+		case GLFW_KEY_E:
+			change2XToonShader();
 			break;
 		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
@@ -812,6 +842,7 @@ void Application::DebugWindows()
 	ImGui::Text("Player Up: %.1f %.1f %.1f", m_player->GetPlayerUp().x, m_player->GetPlayerUp().y, m_player->GetPlayerUp().z);
 	ImGui::Text("Player Front: %.1f %.1f %.1f", m_player->GetPlayerFront().x, m_player->GetPlayerFront().y, m_player->GetPlayerFront().z);
 	ImGui::Text("Player Left: %.1f %.1f %.1f", m_player->GetPlayerLeft().x, m_player->GetPlayerLeft().y, m_player->GetPlayerLeft().z);
+	ImGui::Text("Player Ability On: %s", m_player->is_abilityOn ? "true" : "false");
 	ImGui::End();
 
 	// camera info

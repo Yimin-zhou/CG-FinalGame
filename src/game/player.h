@@ -18,6 +18,12 @@ public:
 	float shootingInterval;
 	float shootingTimer;
 
+	float abilityInterval;
+	float abilityTimer;
+	bool is_abilityOn = false;
+
+	void SetAbilityTimer(float deltaTime);
+
 	Player(glm::vec3 startPosition, float playerSpeed);
 	Player();
 
