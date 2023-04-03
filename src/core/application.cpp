@@ -117,9 +117,6 @@ void Application::Init()
 	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
 
 	// create materials
-	std::shared_ptr<XMaterial> roomPbrMaterial = std::make_shared<XMaterial>();
-	roomPbrMaterial->SetShader(m_mainShader);
-
 	std::shared_ptr<XMaterial> floorPbrMaterial = std::make_shared<XMaterial>();
 	floorPbrMaterial->SetShader(m_mainShader);
 
@@ -136,13 +133,11 @@ void Application::Init()
 	projectileMaterial->SetShader(m_projectileShader);
 
 	// create models
-	std::shared_ptr<Model> model_room = std::make_shared<Model>(roomPbrMaterial, "resources/room/room.obj");
 	std::shared_ptr<Model> model_floor= std::make_shared<Model>(floorPbrMaterial, "resources/floor/floor.obj");
 	std::shared_ptr<Model> model_wall = std::make_shared<Model>(wallPbrMaterial, "resources/wall/wall.obj");
 
 	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
-	models.push_back(model_room);
 	models.push_back(model_floor);
 	models.push_back(model_wall);
 	m_environment = std::make_shared<Environment>(models);
@@ -183,7 +178,7 @@ void Application::Init()
 
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(roomPbrMaterial, framePaths);
+	m_animatedModel = std::make_shared<AnimatedModel>(enemyPbrMaterial, framePaths);
 
 	// init particle system
 	m_particleSystem = std::make_shared<ParticleSystem>();
