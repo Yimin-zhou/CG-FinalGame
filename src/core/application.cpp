@@ -43,7 +43,7 @@ Application::Application()
 		glTextureParameteri(m_shadowTex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		// Set X-Toon Shading Texture
-		//m_toonTexture = Texture("resources/default.png", false); //TODO 
+		m_toonTexture = std::make_shared<Texture>("resources/toon_map.png", false); //TODO 
 
 		// === Create framebuffer for extra texture ===
 		glCreateFramebuffers(1, &m_shadowMapFBO);
@@ -591,7 +591,7 @@ void Application::MainRender()
 				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
 				e->model->material->SetMatrix(modelMat_enemy, view, proj);
 				e->model->material->Apply();
-				//m_toonTexture.bind(GL_TEXTURE4); // TODO TOON MAP
+				m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
 				e->model->material->SetUniform("toonMap", 4);
 				e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
 				e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());

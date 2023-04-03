@@ -104,7 +104,7 @@ private:
 	Shader m_particleShader;
 	Shader m_xToonShader;
 	//GLuint m_texToon;
-	//Texture m_toonTexture;
+	std::shared_ptr<Texture> m_toonTexture;
 
 	bool ability_on = false;
 	float ability_time = 0;

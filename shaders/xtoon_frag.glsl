@@ -2,7 +2,7 @@
 
 layout(location = 4) uniform vec3 viewPosition;
 layout(location = 5) uniform vec3 lightPosition;
-layout(location = 6) uniform sampler2D albedoMap;
+layout(location = 6) uniform sampler2D toonMap;
 
 in vec3 fragPosition;
 in vec3 fragNormal;
@@ -34,8 +34,8 @@ void main()
     vec3 normal = normalize(fragNormal);
     vec3 lightDirection = normalize(lightPosition - fragPosition);
     vec3 viewDirection = normalize(viewPosition - fragPosition);
-    vec3 texColor = texture(albedoMap, fragTexCoord).a * vec3(0.1, 0.8, 0.9);
+    vec3 texColor = texture(toonMap, fragTexCoord).rgb;
     vec3 shadedColor = xToonShading(lightDirection, viewDirection, normal) * texColor;
 
-    color = vec4(texColor, 1);
+    color = vec4(shadedColor, 1);
 }
