@@ -5,7 +5,8 @@ Projectile::Projectile(const glm::vec3& position, const glm::vec3& direction, fl
 	direction(direction),
 	speed(speed),
 	damage(damage),
-	m_timeToLive(5.0f)
+	m_timeToLive(5.0f),
+	collider(position, 1.0f)
 {
 	model = mod;
 }
@@ -19,8 +20,14 @@ bool Projectile::Update(float deltaTime)
 {
 	position += direction * speed * deltaTime;
 	m_timeToLive -= deltaTime;
+	collider.SetPosition(position);
 	return (m_timeToLive <= 0.0f);
 }
+
+bool Projectile::CheckCollision(const Collider& other) const
+{
+	return collider.CheckCollision(other);
+}	
 
 void Projectile::SetPosition(const glm::vec3& pos)
 {

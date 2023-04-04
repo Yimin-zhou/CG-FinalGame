@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "render/model.h"
+#include "collider.h"
 
 
 class Player 
@@ -14,14 +15,17 @@ public:
 	glm::vec3 position;
 	float speed;
 	uint32_t health;
-
+	Collider collider;
 	float shootingInterval;
 	float shootingTimer;
+	glm::vec3 knockback = glm::vec3(0.0f);
 
 	Player(glm::vec3 startPosition, float playerSpeed);
 	Player();
 
 	void Update(float deltaTime);
+
+	void ApplyKnockback(const glm::vec3& knockbackDirection, float knockbackForce);
 
 	void MoveForward(float deltaTime);
 

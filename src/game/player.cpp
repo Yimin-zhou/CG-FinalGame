@@ -1,4 +1,5 @@
 #include "player.h"
+#include <iostream>
 
 Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	position(startPosition),
@@ -11,7 +12,8 @@ Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
 	m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
 	m_yaw(0.0f),
-	modelMatrix(glm::mat4(1.0f))
+	modelMatrix(glm::mat4(1.0f)),
+	collider(startPosition, 1.0f)
 {
 
 }
@@ -24,7 +26,25 @@ Player::Player()
 void Player::Update(float deltaTime)
 {
 	SetShootingTimer(deltaTime);
+	collider.SetPosition(position);
+	
+	// Apply knockback
+	if (glm::length(knockback) > 0) {
+		position.x += knockback.x;
+		position.z += knockback.z;
+		knockback *= 0.96;
+		if (glm::length(knockback) < 0.01f) {
+			knockback = glm::vec3(0.0f);
+		}
+	}
 }
+
+void Player::ApplyKnockback(const glm::vec3& knockbackDirection, float knockbackForce)
+{
+	glm::vec3 normalizedDirection = glm::normalize(knockbackDirection);
+	knockback = normalizedDirection * knockbackForce;
+}
+
 
 void Player::MoveForward(float deltaTime)
 {

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "render/model.h"
+#include "collider.h"
 
 class Boss
 {
@@ -15,12 +16,15 @@ public:
 	uint32_t health = 100;
 	bool isDead = false;
 	float yaw;
+	Collider collider;
     
 	Boss(const glm::vec3& position, float speed, uint32_t health);
 
 	void Update(float deltaTime, const glm::vec3& playerPosition);
 
 	void FacePlayer(const glm::vec3& playerPosition);
+
+	bool CheckCollision(const Collider& other) const;
 
 	void UpdateBossVectors();
 
@@ -41,3 +45,6 @@ public:
 private:
 
 };
+
+
+

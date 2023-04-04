@@ -158,11 +158,14 @@ void Application::Init()
 	enemy_1->model = m_enemyModel;
 	m_enemies.push_back(enemy_1);
 
+	CollisionManager collisionManager;
+	collisionManager.SetPlayer(m_player);
+
 	// create boss
-	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
 
 	m_bossHeadModel = std::make_shared<Model>(bossHeadPbrMaterial, "resources/boss/Head.obj");
 	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
@@ -309,18 +312,17 @@ void Application::OnUpdate()
 			[](const std::shared_ptr<Enemy>& enemy) {
 				return !enemy->IsAlive();
 			}), m_enemies.end());
-
-
+		
 		// update projectile, delete dead projectiles
 		m_projectiles.erase(std::remove_if(m_projectiles.begin(), m_projectiles.end(),
-			[&](const std::shared_ptr<Projectile>& projectile) 
+			[&](const std::shared_ptr<Projectile>& projectile)
 			{
 				bool shouldDestroy = projectile->Update(deltaTime);
 
-				for (auto& enemy : m_enemies) 
+				for (auto& enemy : m_enemies)
 				{
 					if (!enemy->IsAlive()) continue;
-					if(enemy->CheckCollision(projectile->GetPosition())) 
+					if (enemy->CheckCollision(projectile->collider))
 					{
 						enemy->TakeDamage(projectile->GetDamage());
 						shouldDestroy = true;
@@ -329,6 +331,29 @@ void Application::OnUpdate()
 
 				return shouldDestroy;
 			}), m_projectiles.end());
+
+		m_projectiles.erase(std::remove_if(m_projectiles.begin(), m_projectiles.end(),
+			[&](const std::shared_ptr<Projectile>& projectile)
+			{
+				bool shouldDestroy = projectile->Update(deltaTime);
+
+				for (auto& boss : m_bosses)
+				{
+					if (!boss->IsAlive()) continue;
+					if (boss->CheckCollision(projectile->collider))
+					{
+						boss->TakeDamage(projectile->GetDamage());
+						shouldDestroy = true;
+					}
+				}
+
+				return shouldDestroy;
+			}), m_projectiles.end());
+		collisionManager.enemies = m_enemies;
+		collisionManager.bosses = m_bosses;
+		collisionManager.projectiles = m_projectiles;
+		collisionManager.SetPlayer(m_player);
+		collisionManager.CheckCollisions();
 		
 		// update animated Model
 		m_animatedModel->Update(deltaTime);
@@ -513,7 +538,7 @@ void Application::MainRender()
 		//// set transformations for boss
 		int snakeLength = 4;
 		// create tree root (upperarm origin) head
-		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
+		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.5, 0));
 		glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
 		// let the head face player by GetModelMatrix()
 		glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() *  translation_snake * rotation_body;
