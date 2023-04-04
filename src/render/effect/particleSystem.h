@@ -55,7 +55,6 @@ private:
 	GLuint m_quadVA = 0;
 	Shader m_shader;
 
-	glm::mat4 m_modelMatrix;
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 };

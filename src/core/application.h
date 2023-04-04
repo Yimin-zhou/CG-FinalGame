@@ -13,6 +13,7 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 #include <framework/shader.h>
 #include <framework/window.h>
+#include <stb/stb_image.h>
 
 #include <functional>
 #include <iostream>
@@ -43,13 +44,22 @@ public:
 	float deltaTime = 0;
 	float lastFrameTime;
 	float snakeJointAngle = 0;
+
 	CollisionManager collisionManager;
+
+	void InitShader();
+	void InitLight();
+	std::shared_ptr<XMaterial> InitMaterial(Shader& shader);
+	void InitModel();
+	void InitEnemies(std::shared_ptr<XMaterial> material, uint32_t enemyCount);
+	void InitBosses(std::shared_ptr<XMaterial> material);
 
 	void Init();
 	void OnUpdate();
 	void ShadowRender();
 	void MainRender();
 	void ProcessContinousInput();
+
 
 	void onKeyPressed(int key, int mods);
 	void onKeyReleased(int key, int mods);
@@ -60,6 +70,8 @@ public:
 	const std::vector<std::string> loadFramePaths(const std::string& folderPath);
 
 	void DebugWindows();
+	
+	void change2XToonShader();
 
 	Application();
 
@@ -101,6 +113,12 @@ private:
 	Shader m_mainShader;
 	Shader m_projectileShader;
 	Shader m_particleShader;
+	Shader m_xToonShader;
+	//GLuint m_texToon;
+	std::shared_ptr<Texture> m_toonTexture;
+
+	bool ability_on = false;
+	float ability_time = 0;
 
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
