@@ -190,16 +190,20 @@ void Application::Init()
 	m_shadowCam = std::make_shared<Camera>(m_directionalLight->getPosition());
 
 	// 1 material -> multiple objects
+	std::shared_ptr<XMaterial> playerPbrMaterial = InitMaterial(m_mainShader);
 	std::shared_ptr<XMaterial> enemyPbrMaterial = InitMaterial(m_mainShader);
 	std::shared_ptr<XMaterial> bossBodyPbrMaterial = InitMaterial(m_mainShader);
 	std::shared_ptr<XMaterial> projectilePbrMaterial = InitMaterial(m_projectileShader);
+
 
 	// init models with unique materials
 	InitModel();
 
 	// create player
 	m_player = std::make_shared<Player>(glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
-	m_player->model = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/player/player.obj");
+	// init animated model
+	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
+	m_player->animatedModel = std::make_shared<AnimatedModel>(playerPbrMaterial, framePaths);
 
 	// create enemies
 	InitEnemies(enemyPbrMaterial, 10);
@@ -230,10 +234,6 @@ void Application::Init()
 	
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(projectilePbrMaterial, "resources/projectile.obj");
-
-	// init animated model
-	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
-	m_animatedModel = std::make_shared<AnimatedModel>(enemyPbrMaterial, framePaths);
 
 	{
 		// init particle system
@@ -428,7 +428,7 @@ void Application::OnUpdate()
 			snakeJointAngle = glm::sin(currentTime / 0.6) * 25.0f;
 		}
 		// update animated Model
-		m_animatedModel->Update(deltaTime);
+		m_player->animatedModel->Update(deltaTime);
 
 		// render scene
 		ShadowRender();
@@ -462,27 +462,14 @@ void Application::ShadowRender()
 		}
 		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
-		m_player->model->material->SetShader(m_shadowShader);
-		m_player->model->material->SetMatrix(modelMat, view, proj);
-		m_player->model->material->Apply();
+		m_player->animatedModel->material->SetShader(m_shadowShader);
+		m_player->animatedModel->material->SetMatrix(modelMat, view, proj);
+		m_player->animatedModel->material->Apply();
 		if (!is_topDown) {
-			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 		else {
-			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
-		}
-
-		// render animated model
-		m_animatedModel->material->SetShader(m_shadowShader);
-		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-		m_animatedModel->material->Apply();
-		if (!is_topDown) {
-			m_animatedModel->Render(m_directionalLight, m_pointLights,
-				m_spotLights, m_playerCam->GetPosition());
-		}
-		else {
-			m_animatedModel->Render(m_directionalLight, m_pointLights,
-				m_spotLights, m_topDownCam->GetPosition());
+			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 		}
 
 		// render unique material objects
@@ -671,45 +658,25 @@ void Application::MainRender()
 			}
 			glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
 			modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
-			m_player->model->material->SetShader(m_mainShader);
-			m_player->model->material->SetMatrix(modelMat, view, proj);
-			m_player->model->material->Apply();
-			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			m_player->animatedModel->material->SetShader(m_mainShader);
+			m_player->animatedModel->material->SetMatrix(modelMat, view, proj);
+			m_player->animatedModel->material->Apply();
+			m_player->animatedModel->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			{
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-				m_player->model->material->SetUniform("shadowMap", 3);
+				m_player->animatedModel->material->SetUniform("shadowMap", 3);
 			}
 			if (!is_topDown) 
 			{
-				m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 			}
 			else 
 			{
-				m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 			}
 		}
-		
-		// render animated model TODO: add to player
-		{
-			m_animatedModel->material->SetShader(m_mainShader);
-			m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-			m_animatedModel->material->Apply();
-			m_animatedModel->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-			{
-				glActiveTexture(GL_TEXTURE3);
-				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-				m_animatedModel->material->SetUniform("shadowMap", 3);
-			}
-			if (!is_topDown) {
-				m_animatedModel->Render(m_directionalLight, m_pointLights,
-					m_spotLights, m_playerCam->GetPosition());
-			}
-			else {
-				m_animatedModel->Render(m_directionalLight, m_pointLights,
-					m_spotLights, m_topDownCam->GetPosition());
-			}
-		}
+	
 
 		// render unique material env props
 		{
