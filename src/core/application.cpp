@@ -188,15 +188,15 @@ void Application::Init()
 	InitEnemies(enemyPbrMaterial, 10);
 
 	// create boss
-	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 5, 0), 4.0f, 11);
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
 
-	m_bossHeadModel = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Head.obj");
-	m_bossBodyModel_1 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body.obj");
-	m_bossBodyModel_2 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body2.obj");
-	m_bossBodyModel_3 = std::make_shared<Model>(enemyPbrMaterial, "resources/boss/Body3.obj");
+	m_bossHeadModel = std::make_shared<Model>(bossHeadPbrMaterial, "resources/boss/Head.obj");
+	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
+	m_bossBodyModel_2 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body2.obj");
+	m_bossBodyModel_3 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body3.obj");
 
 	m_bossHead->model = m_bossHeadModel;
 	m_bossBody_1->model = m_bossBodyModel_1;
@@ -207,6 +207,7 @@ void Application::Init()
 	m_bosses.push_back(m_bossBody_1);
 	m_bosses.push_back(m_bossBody_2);
 	m_bosses.push_back(m_bossBody_3);
+	
 
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(projectilePbrMaterial, "resources/projectile.obj");
@@ -325,9 +326,8 @@ void Application::OnUpdate()
 		for (auto& boss : m_bosses)
 		{
 			boss->Update(deltaTime, m_player->GetPosition());
-			
 		}
-		snakeJointAngle += glm::sin(deltaTime);
+		snakeJointAngle = glm::sin(currentTime / 0.8) * 20.0f;
 
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
@@ -446,7 +446,46 @@ void Application::ShadowRender()
 			}
 		}
 
-		// render boss
+		//// render boss
+		//int snakeLength = 4;
+		//// create tree root (upperarm origin)
+		//glm::mat4 bossModelMat = glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
+		//std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
+		//std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+		//tempObjects.push_back(root_snake);
+
+		//// body
+		//for (int i = 0; i < snakeLength - 1; ++i)
+		//{
+		//	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(3, 0, 0));
+		//	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+		//	bossModelMat = translation_snake * rotation_snake;
+		//	std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
+		//	tempObjects[i]->addChild(node);
+		//	tempObjects.push_back(node);
+		//}
+		//traverse(root_snake);
+
+		//for (int i = 0; i < snakeLength; ++i)
+		//{
+		//	if (!m_bosses[i]->IsAlive()) continue;
+		//	glm::mat4 modelMat_boss = tempObjects[i]->transform;
+		//	m_bosses[i]->model->material->SetShader(m_mainShader);
+		//	m_bosses[i]->model->material->Apply();
+		//	m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+		//	m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+		//	{
+		//		glActiveTexture(GL_TEXTURE3);
+		//		glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+		//		m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+		//	}
+		//	if (!is_topDown) {
+		//		m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+		//	}
+		//	else {
+		//		m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+		//	}
+		//}
 
 
 	}
@@ -500,37 +539,50 @@ void Application::MainRender()
 			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
 		}
 
-		//// render boss
-		//int snakeLength = 4;
-		//// create tree root (upperarm origin)
-		//glm::mat4 bossModelMat = glm::translate(glm::mat4(1), glm::vec3(m_bosses[0]->GetPosition()));
-		//std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
-		//std::vector<std::shared_ptr<ObjectNode>> tempObjects;
-		//tempObjects.push_back(root_snake);
+		//// set transformations for boss
+		int snakeLength = 4;
+		// create tree root (upperarm origin) head
+		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
+		glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+		// let the head face player by GetModelMatrix()
+		glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() *  translation_snake * rotation_body;
+		std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
+		std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+		tempObjects.push_back(root_snake);
 
-		//// body
-		//for (int i = 0; i < snakeLength - 1; ++i)
-		//{
-		//	glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
-		//	glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
-		//	bossModelMat = translation_snake * rotation_snake;
-		//	std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
-		//	tempObjects[i]->addChild(node);
-		//	tempObjects.push_back(node);
-		//}
-		//traverse(root_snake);
-
-		//for (int i = 0; i < snakeLength; ++i)
-		//{
-		//	if (!m_bosses[i]->IsAlive()) continue;
-		//	glm::mat4 modelMat_boss = tempObjects[i]->transform;
-		//	m_bosses[i]->model->material->SetShader(m_mainShader);
-		//	m_bosses[i]->model->material->Apply();
-		//	m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
-		//	m_bosses[i]->model->Render(m_directionalLight, m_pointLights,
-		//		m_spotLights, m_playerCam->GetPosition());
-		//}
-
+		// body
+		for (int i = 0; i < snakeLength - 1; ++i)
+		{
+			glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0));
+			glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(m_bosses[0]->GetYaw()), glm::vec3(0, 1, 0));
+			bossModelMat = translation_snake * rotation_snake;
+			std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
+			tempObjects[i]->addChild(node);
+			tempObjects.push_back(node);
+		}
+		traverse(root_snake);
+		// render head and body
+		for (int i = 0; i < snakeLength; ++i)
+		{
+			if (!m_bosses[i]->IsAlive()) continue;
+			glm::mat4 modelMat_boss = tempObjects[i]->transform;
+			m_bosses[i]->model->material->SetShader(m_mainShader);
+			m_bosses[i]->model->material->Apply();
+			m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+			m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			{
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+				m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+			}
+			if (!is_topDown) {
+				m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			}
+			else {
+				m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			}
+		}
 
 		// set player matrix & render
 		if (!is_topDown) {
@@ -584,7 +636,7 @@ void Application::MainRender()
 			m->material->SetShader(m_mainShader);
 			m->material->SetMatrix(glm::mat4(1), view, proj);
 			m->material->Apply();
-			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			m->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			{
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
@@ -906,6 +958,16 @@ void Application::DebugWindows()
 	{
 		ImGui::Text("Enemy %d Position: %.1f %.1f %.1f", i, m_enemies[i]->GetPosition().x, m_enemies[i]->GetPosition().y, m_enemies[i]->GetPosition().z);
 		ImGui::Text("Enemy %d Health: %d", i, m_enemies[i]->GetHealth());
+	}
+	ImGui::End();
+
+	// boss info
+	ImGui::Begin("Boss Info");
+	// loop through all enemies
+	for (int i = 0; i < m_bosses.size(); i++)
+	{
+		ImGui::Text("Boss %d Position: %.1f %.1f %.1f", i, m_bosses[i]->GetPosition().x, m_bosses[i]->GetPosition().y, m_bosses[i]->GetPosition().z);
+		ImGui::Text("Boss %d Health: %d", i, m_bosses[i]->GetHealth());
 	}
 	ImGui::End();
 }
