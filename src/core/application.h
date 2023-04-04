@@ -36,6 +36,7 @@ DISABLE_WARNINGS_POP()
 #include "game/topDownCamera.h"
 #include "game/ntree.h"
 #include "game/boss.h"
+#include <game/collisionManager.h>
 
 class Application
 {
@@ -43,6 +44,8 @@ public:
 	float deltaTime = 0;
 	float lastFrameTime;
 	float snakeJointAngle = 0;
+
+	CollisionManager collisionManager;
 
 	void InitShader();
 	void InitLight();

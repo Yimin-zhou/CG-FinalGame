@@ -5,7 +5,9 @@ Boss::Boss(const glm::vec3& pos, float sp, uint32_t hp) :
 	speed(sp),
 	health(hp),
 	isDead(false),
-	model()
+	model(),
+	yaw(0.0f),
+	collider(pos, 2.2f)
 {
 
 }
@@ -16,11 +18,9 @@ void Boss::Update(float deltaTime, const glm::vec3& playerPosition)
 	// Simple follow player logic:
 	glm::vec3 direction = playerPosition - position;
 	direction = direction == glm::vec3(0) ? direction : glm::normalize(direction);
+	position += direction * speed * deltaTime;
 	
-	float distance = glm::distance(playerPosition, position);
-	if (distance > 2.0f) {
-		position += direction * speed * deltaTime;
-	}
+	collider.SetPosition(position);
 	FacePlayer(playerPosition);
 }
 
@@ -28,17 +28,7 @@ void Boss::FacePlayer(const glm::vec3& playerPosition) {
 	glm::vec3 direction = glm::normalize(playerPosition - position);
 	float newYaw = glm::degrees(atan2(direction.x, direction.z));
 	yaw = newYaw;
-	UpdateBossVectors();
 }
-
-void Boss::UpdateBossVectors()
-{
-	glm::vec3 newFront;
-	newFront.x = cos(glm::radians(yaw));
-	newFront.y = 0.0f;
-	newFront.z = sin(glm::radians(yaw));
-}
-
 
 void Boss::TakeDamage(float damage)
 {
@@ -54,13 +44,9 @@ bool Boss::IsAlive() const
 	return !isDead;
 }
 
-bool Boss::CheckCollision(glm::vec3 projectilePos)
+bool Boss::CheckCollision(const Collider& other) const
 {
-	glm::vec3 delta = projectilePos - position;
-	float distance = glm::length(delta);
-	float radiusSum = 2.0f + 1.0f;
-
-	return distance < radiusSum;
+	return collider.CheckCollision(other);
 }
 
 uint32_t Boss::GetHealth() const
