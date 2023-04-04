@@ -157,7 +157,7 @@ void Application::InitEnemies(std::shared_ptr<XMaterial> material, uint32_t enem
 		// random position between -40 and 40
 		float x = (rand() % 80) - 40;
 		float z = (rand() % 80) - 40;
-		auto enemy = std::make_shared<Enemy>(glm::vec3(x, 0, z), 2.0f, 4);
+		auto enemy = std::make_shared<Enemy>(glm::vec3(x, 1, z), 2.0f, 4);
 		enemy->model = m_enemyModel;
 		m_enemies.push_back(enemy);
 	}
@@ -836,7 +836,7 @@ void Application::onKeyPressed(int key, int mods)
 			break;
 		case GLFW_KEY_F2:
 			// spawn new enemy at random position, random position between -20 and 20
-			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
+			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 1, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
 			m_enemies.push_back(enemy);
 			break;
