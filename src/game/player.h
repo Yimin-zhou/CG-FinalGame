@@ -6,12 +6,13 @@
 
 #include "render/model.h"
 #include "collider.h"
+#include "animatedModel.h"
 
 
 class Player 
 {
 public:
-	std::shared_ptr<Model> model;
+	std::shared_ptr<AnimatedModel> animatedModel;
 	glm::vec3 position;
 	float speed;
 	uint32_t health;
