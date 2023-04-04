@@ -692,7 +692,7 @@ void Application::MainRender()
 				}
 			}
 		}
-
+		
 		// render enemies
 		{
 			for (auto& e : m_enemies)
@@ -700,7 +700,7 @@ void Application::MainRender()
 				if (!m_player->is_abilityOn){
 					if (!e->IsAlive()) continue;
 					e->model->material->SetShader(m_mainShader);
-					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					glm::mat4 modelMat_enemy = e->GetModelMatrix();
 					e->model->material->SetMatrix(modelMat_enemy, view, proj);
 					e->model->material->Apply();
 					e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
@@ -711,7 +711,7 @@ void Application::MainRender()
 				else {
 					if (!e->IsAlive()) continue;
 					e->model->material->SetShader(m_xToonShader);
-					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					glm::mat4 modelMat_enemy = e->GetModelMatrix();
 					e->model->material->SetMatrix(modelMat_enemy, view, proj);
 					e->model->material->Apply();
 					m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
