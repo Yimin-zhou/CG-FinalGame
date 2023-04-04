@@ -32,6 +32,7 @@ AnimatedModel::AnimatedModel(const std::shared_ptr<XMaterial>& mater, const std:
 	material(mater), m_currentFrame(0), m_frameDuration(1.0f / 60.0f), m_elapsedTime(0.0f)
 {
 	for (const auto& path : framePaths) {
+		if (path == "resources/animatedModels\\albedo.png" || path == "resources/animatedModels\\rmaMap.png" || path == "resources/animatedModels\\player.mtl")  continue;
 		auto frame = std::make_shared<Model>(material, path);
 		frames.push_back(frame);
 	}

@@ -85,7 +85,6 @@ private:
 	std::shared_ptr<Camera> m_playerCam;
 	std::shared_ptr<TopDownCamera> m_topDownCam;
 	
-	std::shared_ptr<AnimatedModel> m_animatedModel;
 
 	std::vector<std::shared_ptr<Boss>> m_bosses;
 	std::shared_ptr<Model> m_bossHeadModel;
