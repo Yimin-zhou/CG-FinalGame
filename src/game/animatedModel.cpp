@@ -8,7 +8,7 @@ AnimatedModel::~AnimatedModel()
 
 void AnimatedModel::Update(float deltaTime)
 {
-	m_elapsedTime += deltaTime;
+	m_elapsedTime += deltaTime * 0.1f;
 	if (m_elapsedTime >= m_frameDuration) {
 		m_elapsedTime -= m_frameDuration;
 		m_currentFrame = (m_currentFrame + 1) % frames.size();
