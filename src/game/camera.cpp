@@ -6,7 +6,6 @@ Camera::Camera()
 
 }
 
-
 Camera::Camera(const glm::vec3& initialPosition) :
 	m_position(initialPosition), 
 	m_worldUp(0.0f, 1.0f, 0.0f),
@@ -73,6 +72,23 @@ void Camera::FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> playe
 
 	// Update the camera's orientation to look at the player's position
 	m_front = glm::normalize(player->GetPosition() - m_position);
+	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
+	m_up = glm::normalize(glm::cross(m_right, m_front));
+}
+
+void Camera::FollowBossAlongBezierCurveConstanly(std::shared_ptr<Boss> boss, const BezierCurve& cameraPath, float t)
+{
+	// Evaluate the position on the Bézier curve
+	glm::vec3 curvePosition = cameraPath.evaluate(t);
+
+	// Calculate the offset vector based on the player's position and the curve position
+	glm::vec3 offset = curvePosition - boss->GetPosition();
+
+	// Apply the offset to the camera's position
+	m_position = boss->GetPosition() + offset;
+
+	// Update the camera's orientation to look at the player's position
+	m_front = glm::normalize(boss->GetPosition() - m_position);
 	m_right = glm::normalize(glm::cross(m_front, m_worldUp));
 	m_up = glm::normalize(glm::cross(m_right, m_front));
 }
