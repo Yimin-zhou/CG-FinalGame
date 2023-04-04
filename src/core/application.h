@@ -127,7 +127,5 @@ private:
 
 	// post processing
 	Shader m_bloomShader;
-	
-
 	std::shared_ptr<PostProcessing> m_postProcessing;
 };

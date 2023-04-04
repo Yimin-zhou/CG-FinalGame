@@ -2,15 +2,22 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <framework/shader.h>
 #include <iostream>
 
 class PostProcessing
 {
 public:
-	PostProcessing(const int width, const int height);
+	PostProcessing(const uint32_t width, const uint32_t height);
 	~PostProcessing();
 
-	void render(GLuint texture);
+	void BindFramebuffer();
+	void UnbindFramebuffer();
+	void RenderToScreen();
+
+	void SetShader(Shader& shader);
+
+	void resize(int width, int height);
 
 private:
 	void initScreenQuad();
@@ -19,11 +26,8 @@ private:
 	int m_width;
 	int m_height;
 
-	GLuint m_vao;
-	GLuint m_vbo;
-
-	GLuint m_fbo;
-	GLuint m_rbo;
-
-	GLuint m_screenShader;
+	Shader m_screenShader;
+	GLuint m_quadVAO, m_quadVBO;
+	GLuint m_framebuffer, m_rt;
+	GLuint m_depthStencilRBO;
 };

@@ -15,11 +15,11 @@ void PostProcessing::initScreenQuad()
 		 1.0f,  1.0f,     1.0f, 1.0f
 	};
 
-	glGenVertexArrays(1, &m_vao);
-	glGenBuffers(1, &m_vbo);
-	glBindVertexArray(m_vao);
+	glGenVertexArrays(1, &m_quadVAO);
+	glGenBuffers(1, &m_quadVBO);
+	glBindVertexArray(m_quadVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
@@ -32,48 +32,77 @@ void PostProcessing::initScreenQuad()
 
 PostProcessing::~PostProcessing()
 {
-	glDeleteVertexArrays(1, &m_vao);
-	glDeleteBuffers(1, &m_vbo);
-	glDeleteFramebuffers(1, &m_fbo);
-	glDeleteRenderbuffers(1, &m_rbo);
+    glDeleteVertexArrays(1, &m_quadVAO);
+    glDeleteBuffers(1, &m_quadVBO);
+    glDeleteFramebuffers(1, &m_framebuffer);
+    glDeleteTextures(1, &m_rt);
+	glDeleteRenderbuffers(1, &m_depthStencilRBO);
 }
 
-void PostProcessing::render(GLuint texture)
+void PostProcessing::BindFramebuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+}
+
+void PostProcessing::UnbindFramebuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+void PostProcessing::RenderToScreen()
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	// Use the post-processing shader
-	glUseProgram(m_screenShader);
 
-	// Bind the texture to the shader
+	glDisable(GL_DEPTH_TEST);
+	// disable blending
+	glDisable(GL_BLEND);
+	// disable face culling
+	glDisable(GL_CULL_FACE);
+
+	m_screenShader.bind();
+	glBindVertexArray(m_quadVAO);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// Render the screen quad
-	glBindVertexArray(m_vao);
+	glBindTexture(GL_TEXTURE_2D, m_rt);
+	glUniform1i(0, 0);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+}
 
-	// Unbind the texture
-	glBindTexture(GL_TEXTURE_2D, 0);
+void PostProcessing::SetShader(Shader& shader)
+{
+	m_screenShader = shader;
+}
 
-	// Unuse the shader
-	glUseProgram(0);
+void PostProcessing::resize(int width, int height)
+{
+	m_width = width;
+	m_height = height;
+
+	// Resize the framebuffer
 }
 
 void PostProcessing::initFramebuffer()
 {
-	// Set up framebuffer
-	glGenFramebuffers(1, &m_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+	// Generate framebuffer
+	glGenFramebuffers(1, &m_framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
-	// Set up renderbuffer for depth and stencil
-	glGenRenderbuffers(1, &m_rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+	// Generate texture to store color information with HDR support
+	glGenTextures(1, &m_rt);
+	glBindTexture(GL_TEXTURE_2D, m_rt);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_rt, 0);
+
+	// Create and configure the depth-stencil renderbuffer
+	glGenRenderbuffers(1, &m_depthStencilRBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_depthStencilRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilRBO);
+
 
 	// Check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -81,10 +110,13 @@ void PostProcessing::initFramebuffer()
 		std::cerr << "ERROR: Framebuffer is not complete!" << std::endl;
 	}
 
+	// Unbind framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-PostProcessing::PostProcessing(const int width, const int height) : m_width(width), m_height(height)
+PostProcessing::PostProcessing(const uint32_t width, const uint32_t height) : 
+	m_width(width),
+	m_height(height)
 {
 	initScreenQuad();
 	initFramebuffer();

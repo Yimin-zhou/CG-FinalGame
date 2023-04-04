@@ -81,6 +81,11 @@ void Application::InitShader()
 	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/xtoon_vert.glsl");
 	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
 	m_xToonShader = xToonShader.build();
+
+	ShaderBuilder bloomShader;
+	bloomShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert.glsl");
+	bloomShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag.glsl");
+	m_bloomShader = bloomShader.build();
 }
 
 void Application::InitLight()
@@ -234,6 +239,11 @@ void Application::Init()
 		m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
 		m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+	}
+
+	{
+		// init postprocessing
+		m_postProcessing = std::make_shared<PostProcessing>(m_window.getWindowSize().x, m_window.getWindowSize().y);
 	}
 
 	// startTrailer
@@ -506,6 +516,7 @@ void Application::ShadowRender()
 
 void Application::MainRender()
 {
+	m_postProcessing->BindFramebuffer();
 	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -534,6 +545,7 @@ void Application::MainRender()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	glViewport(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
@@ -725,7 +737,6 @@ void Application::MainRender()
 			}
 		}
 
-
 		// update particles
 		{
 			m_particleSystem->Update(deltaTime);
@@ -735,6 +746,8 @@ void Application::MainRender()
 			m_particleSystem->SetProjectionMatrix(proj);
 			m_particleSystem->Render();
 		}
+
+		m_postProcessing->UnbindFramebuffer();
 	}
 
 	
@@ -753,7 +766,8 @@ void Application::MainRender()
 
 void Application::PostProcssing()
 {
-
+	m_postProcessing->SetShader(m_bloomShader);
+	m_postProcessing->RenderToScreen();
 
 	m_window.swapBuffers();
 }
