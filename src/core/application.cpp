@@ -757,7 +757,7 @@ void Application::MainRender()
 					m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
 					e->model->material->SetUniform("toonMap", 4);
 					e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
-					e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());
+					e->model->material->SetUniform("lightPosition", m_directionalLight->getPosition());
 					//e->model->material->SetUniform("distanceOffset", );
 					//e->model->material->SetUniform("distanceScale", );
 				}
