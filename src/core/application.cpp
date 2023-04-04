@@ -355,6 +355,10 @@ void Application::OnUpdate()
 			boss->Update(deltaTime, m_player->GetPosition());
 		}
 		snakeJointAngle = glm::sin(currentTime / 0.8) * 20.0f;
+		m_bosses.erase(std::remove_if(m_bosses.begin(), m_bosses.end(),
+			[](const std::shared_ptr<Boss>& boss) {
+				return !boss->IsAlive();
+			}), m_bosses.end());
 
 		// update enemies, delete dead enemies
 		for (auto& enemy : m_enemies)
@@ -382,26 +386,22 @@ void Application::OnUpdate()
 					}
 				}
 
-				return shouldDestroy;
-			}), m_projectiles.end());
-
-		m_projectiles.erase(std::remove_if(m_projectiles.begin(), m_projectiles.end(),
-			[&](const std::shared_ptr<Projectile>& projectile)
-			{
-				bool shouldDestroy = projectile->Update(deltaTime);
-
 				for (auto& boss : m_bosses)
 				{
 					if (!boss->IsAlive()) continue;
 					if (boss->CheckCollision(projectile->collider))
 					{
-						boss->TakeDamage(projectile->GetDamage());
+						for (auto& bossPart : m_bosses)
+						{
+							bossPart->TakeDamage(projectile->GetDamage());
+						}
 						shouldDestroy = true;
 					}
 				}
 
 				return shouldDestroy;
 			}), m_projectiles.end());
+
 		collisionManager.enemies = m_enemies;
 		collisionManager.bosses = m_bosses;
 		collisionManager.projectiles = m_projectiles;
@@ -591,51 +591,53 @@ void Application::MainRender()
 			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
 		}
 
-
 		// render boss
+		if (m_bosses.size() > 0) 
 		{
-			//// set transformations for boss
-			int snakeLength = 4;
-			// create tree root (upperarm origin) head
-			glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
-			glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
-			// let the head face player by GetModelMatrix()
-			glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() *  translation_snake * rotation_body;
-			std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
-			std::vector<std::shared_ptr<ObjectNode>> tempObjects;
-			tempObjects.push_back(root_snake);
-
-			// body
-			for (int i = 0; i < snakeLength - 1; ++i)
 			{
-				glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0));
-				glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
-				glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(m_bosses[0]->GetYaw()), glm::vec3(0, 1, 0));
-				bossModelMat = translation_snake * rotation_snake;
-				std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
-				tempObjects[i]->addChild(node);
-				tempObjects.push_back(node);
-			}
-			traverse(root_snake);
-			// render head and body
-			for (int i = 0; i < snakeLength; ++i)
-			{
-				if (!m_bosses[i]->IsAlive()) continue;
-				glm::mat4 modelMat_boss = tempObjects[i]->transform;
-				m_bosses[i]->model->material->SetShader(m_mainShader);
-				m_bosses[i]->model->material->Apply();
-				m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
-				m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+				//// set transformations for boss
+				int snakeLength = 4;
+				// create tree root (upperarm origin) head
+				glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
+				glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+				// let the head face player by GetModelMatrix()
+				glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() * translation_snake * rotation_body;
+				std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
+				std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+				tempObjects.push_back(root_snake);
+				
+				// body
+				for (int i = 0; i < snakeLength - 1; ++i)
 				{
-					glActiveTexture(GL_TEXTURE3);
-					glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-					m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+					glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0));
+					glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+					glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(m_bosses[0]->GetYaw()), glm::vec3(0, 1, 0));
+					bossModelMat = translation_snake * rotation_snake;
+					std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
+					tempObjects[i]->addChild(node);
+					tempObjects.push_back(node);
 				}
-				if (!is_topDown) {
-					m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
-				}
-				else {
-					m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				traverse(root_snake);
+				// render head and body
+				for (int i = 0; i < snakeLength; ++i)
+				{
+					if (m_bosses.size() <= 0 || !m_bosses[i]->IsAlive()) break;
+					glm::mat4 modelMat_boss = tempObjects[i]->transform;
+					m_bosses[i]->model->material->SetShader(m_mainShader);
+					m_bosses[i]->model->material->Apply();
+					m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+					m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+					{
+						glActiveTexture(GL_TEXTURE3);
+						glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+						m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+					}
+					if (!is_topDown) {
+						m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+					}
+					else {
+						m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+					}
 				}
 			}
 		}
@@ -711,7 +713,7 @@ void Application::MainRender()
 				}
 			}
 		}
-
+		
 		// render enemies
 		{
 			for (auto& e : m_enemies)
@@ -719,7 +721,7 @@ void Application::MainRender()
 				if (!m_player->is_abilityOn){
 					if (!e->IsAlive()) continue;
 					e->model->material->SetShader(m_mainShader);
-					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					glm::mat4 modelMat_enemy = e->GetModelMatrix();
 					e->model->material->SetMatrix(modelMat_enemy, view, proj);
 					e->model->material->Apply();
 					e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
@@ -730,7 +732,7 @@ void Application::MainRender()
 				else {
 					if (!e->IsAlive()) continue;
 					e->model->material->SetShader(m_xToonShader);
-					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					glm::mat4 modelMat_enemy = e->GetModelMatrix();
 					e->model->material->SetMatrix(modelMat_enemy, view, proj);
 					e->model->material->Apply();
 					m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP

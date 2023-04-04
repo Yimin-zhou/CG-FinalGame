@@ -25,49 +25,49 @@ void CollisionManager::ResolveCollisions()
     // Implement your logic to resolve collisions (e.g., destroy enemies, decrease health)
 }
 
-void CollisionManager::CheckEnemyProjectileCollisions()
-{
-    for (auto& enemy : enemies)
-    {
-        for (auto it = projectiles.begin(); it != projectiles.end(); )
-        {
-            if (enemy->GetCollider().CheckCollision((*it)->collider))
-            {
-                // Handle collision between enemy and projectile
-                enemy->TakeDamage(1); // example: reduce enemy health by 1
-
-                // Remove the projectile from the list after handling the collision
-                it = projectiles.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-    }
-}
-
-void CollisionManager::CheckBossProjectileCollisions()
-{
-    if (bosses.size() <= 0) return;
-    for (auto& boss : bosses)
-    {
-        for (auto it = projectiles.begin(); it != projectiles.end(); )
-        {
-            if (boss->collider.CheckCollision((*it)->collider))
-            {
-				// Handle collision between enemy and projectile
-				boss->TakeDamage(1); // example: reduce enemy health by 1
-				// Remove the projectile from the list after handling the collision
-				it = projectiles.erase(it);
-			}
-            else
-            {
-				++it;
-			}
-		}
-	}
-}
+//void CollisionManager::CheckEnemyProjectileCollisions()
+//{
+//    for (auto& enemy : enemies)
+//    {
+//        for (auto it = projectiles.begin(); it != projectiles.end(); )
+//        {
+//            if (enemy->GetCollider().CheckCollision((*it)->collider))
+//            {
+//                // Handle collision between enemy and projectile
+//                enemy->TakeDamage(1); // example: reduce enemy health by 1
+//
+//                // Remove the projectile from the list after handling the collision
+//                it = projectiles.erase(it);
+//            }
+//            else
+//            {
+//                ++it;
+//            }
+//        }
+//    }
+//}
+//
+//void CollisionManager::CheckBossProjectileCollisions()
+//{
+//    if (bosses.size() <= 0) return;
+//    for (auto& boss : bosses)
+//    {
+//        for (auto it = projectiles.begin(); it != projectiles.end(); )
+//        {
+//            if (boss->collider.CheckCollision((*it)->collider))
+//            {
+//				// Handle collision between enemy and projectile
+//				boss->TakeDamage(1); // example: reduce enemy health by 1
+//				// Remove the projectile from the list after handling the collision
+//				it = projectiles.erase(it);
+//			}
+//            else
+//            {
+//				++it;
+//			}
+//		}
+//	}
+//}
 
 void CollisionManager::CheckEnemyPlayerCollisions()
 {
