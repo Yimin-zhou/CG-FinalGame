@@ -81,12 +81,22 @@ void Application::InitShader()
 	xToonShader.addStage(GL_VERTEX_SHADER, "shaders/xtoon_vert.glsl");
 	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
 	m_xToonShader = xToonShader.build();
+
+	ShaderBuilder bloomShader;
+	bloomShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert.glsl");
+	bloomShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag.glsl");
+	m_bloomShader = bloomShader.build();
+
+	ShaderBuilder bloomBlurShader;
+	bloomBlurShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_blur_vert.glsl");
+	bloomBlurShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_blur_frag.glsl");
+	m_bloomBlurShader = bloomBlurShader.build();
 }
 
 void Application::InitLight()
 {
 	// setup lights
-	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
+	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
 	// point light
 	std::shared_ptr<PointLight> pointLight_1 = std::make_shared<PointLight>(glm::vec3(10.0f, 5.0f, -10.0f),
 		glm::vec3(0.95f, 0.2f, 0.9f), 100.0f, 1.0f, 0.2f, 0.2f);
@@ -157,7 +167,7 @@ void Application::InitEnemies(std::shared_ptr<XMaterial> material, uint32_t enem
 		// random position between -40 and 40
 		float x = (rand() % 80) - 40;
 		float z = (rand() % 80) - 40;
-		auto enemy = std::make_shared<Enemy>(glm::vec3(x, 0, z), 2.0f, 4);
+		auto enemy = std::make_shared<Enemy>(glm::vec3(x, 1, z), 2.0f, 4);
 		enemy->model = m_enemyModel;
 		m_enemies.push_back(enemy);
 	}
@@ -235,6 +245,12 @@ void Application::Init()
 		m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
 		m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+	}
+
+	{
+		// init postprocessing
+		m_postProcessing = std::make_shared<PostProcessing>(m_window.getWindowSize().x, m_window.getWindowSize().y);
+		m_postProcessing->SetShader(m_bloomShader, m_bloomBlurShader);
 	}
 
 	// startTrailer
@@ -398,6 +414,7 @@ void Application::OnUpdate()
 		// render scene
 		ShadowRender();
 		MainRender();
+		PostProcssing();
 		lastFrameTime = currentTime;
 	}
 }
@@ -528,6 +545,7 @@ void Application::ShadowRender()
 
 void Application::MainRender()
 {
+	m_postProcessing->BindFramebuffer();
 	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -556,6 +574,7 @@ void Application::MainRender()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	glViewport(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
 	glScissor(0, 0, m_window.getWindowSize().x, m_window.getWindowSize().y);
@@ -748,7 +767,6 @@ void Application::MainRender()
 			}
 		}
 
-
 		// update particles
 		{
 			m_particleSystem->Update(deltaTime);
@@ -758,6 +776,8 @@ void Application::MainRender()
 			m_particleSystem->SetProjectionMatrix(proj);
 			m_particleSystem->Render();
 		}
+
+		m_postProcessing->UnbindFramebuffer();
 	}
 
 	
@@ -771,6 +791,13 @@ void Application::MainRender()
 	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
 	ImGui::End();
 #endif
+
+}
+
+void Application::PostProcssing()
+{
+	m_postProcessing->BlurScreenTex();
+	m_postProcessing->RenderToScreen();
 
 	m_window.swapBuffers();
 }
@@ -819,7 +846,7 @@ void Application::ProcessContinousInput()
 		std::shared_ptr<Projectile> projectile = std::make_shared<Projectile>(glm::vec3(m_player->GetPosition().x , 
 			m_player->GetPosition().y + 1.5f, m_player->GetPosition().z),
 			m_player->GetPlayerFront(),
-			15.0f, 2, m_projectileModel); // 1.5f is the player height(offset)
+			20.0f, 2, m_projectileModel); // 1.5f is the player height(offset)
 
 		m_projectiles.push_back(projectile);
 
@@ -860,7 +887,7 @@ void Application::onKeyPressed(int key, int mods)
 			break;
 		case GLFW_KEY_F2:
 			// spawn new enemy at random position, random position between -20 and 20
-			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 0, rand() % 40 - 20), 3.0f, 10);
+			std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>(glm::vec3(rand() % 40 - 20, 1, rand() % 40 - 20), 3.0f, 10);
 			enemy->model = m_enemyModel;
 			m_enemies.push_back(enemy);
 			break;

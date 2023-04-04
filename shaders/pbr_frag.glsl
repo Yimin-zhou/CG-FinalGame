@@ -17,7 +17,8 @@ layout(location = 12) uniform vec3 cameraPos;
 in vec3 fragPosition;
 in vec3 fragNormal;
 in vec2 fragTexCoord;
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 bloomColor;
 
 in vec4 temp;
 
@@ -64,30 +65,6 @@ uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 const float PI = 3.14159265359;
 
-vec3 computeTangent()
-{
-    vec3 dp1 = dFdx(fragPosition);
-    vec3 dp2 = dFdy(fragPosition);
-    vec2 duv1 = dFdx(fragTexCoord);
-    vec2 duv2 = dFdy(fragTexCoord);
-
-    float r = 1.0 / (duv1.x * duv2.y - duv1.y * duv2.x);
-    vec3 tangent = (dp1 * duv2.y - dp2 * duv1.y) * r;
-    return normalize(tangent);
-}
-
-vec3 computeBitangent()
-{
-    vec3 dp1 = dFdx(fragPosition);
-    vec3 dp2 = dFdy(fragPosition);
-    vec2 duv1 = dFdx(fragTexCoord);
-    vec2 duv2 = dFdy(fragTexCoord);
-
-    float r = 1.0 / (duv1.x * duv2.y - duv1.y * duv2.x);
-    vec3 bitangent = (dp2 * duv1.x - dp1 * duv2.x) * r;
-    return normalize(bitangent);
-}
-
 // learnopengl: https://learnopengl.com/PBR/Theory
 float DistributionGGX(vec3 N, vec3 H, float a)
 {
@@ -97,7 +74,7 @@ float DistributionGGX(vec3 N, vec3 H, float a)
 	
     float nom    = a2;
     float denom  = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom        = PI * denom * denom;
+    denom        = PI * denom * denom + 0.0001;
 	
     return nom / denom;
 }
@@ -105,7 +82,7 @@ float DistributionGGX(vec3 N, vec3 H, float a)
 float GeometrySchlickGGX(float NdotV, float k)
 {
     float nom   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float denom = NdotV * (1.0 - k) + k  + 0.0001;
 	
     return nom / denom;
 }
@@ -282,10 +259,20 @@ void main()
 
 
 
-    vec3 color = ambient + Lo + emissive;
+    vec3 color = ambient + Lo + emissive * 10;
 	
     color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0/2.2)); // gamma correction
+//    color = pow(color, vec3(1.0/2.2)); // gamma correction
 
     fragColor = vec4(vec3(color), 1.0);
+
+    float brightness = 0.2126 * fragColor.r + 0.7152 * fragColor.g + 0.0722 * fragColor.b;
+    if(brightness > 0.8)
+    {
+        bloomColor = fragColor;
+    }
+    else
+    {
+        bloomColor = vec4(vec3(0), 1);
+    }
 }
