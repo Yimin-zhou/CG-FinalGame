@@ -61,7 +61,7 @@ private:
 	float m_mouseSensitivity = 0.4f;
 	float m_zoom;
 	float m_near = 0.1f;
-	float m_far = 100.0f;
+	float m_far = 300.0f;
 
 	//Top-down options
 	bool m_isTopDown = false;
