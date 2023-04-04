@@ -35,7 +35,7 @@ void Player::Update(float deltaTime)
 	if (glm::length(knockback) > 0) {
 		position.x += knockback.x;
 		position.z += knockback.z;
-		knockback *= 0.96;
+		knockback *= 0.95;
 		if (glm::length(knockback) < 0.01f) {
 			knockback = glm::vec3(0.0f);
 		}
@@ -49,6 +49,11 @@ void Player::ApplyKnockback(const glm::vec3& knockbackDirection, float knockback
 {
 	glm::vec3 normalizedDirection = glm::normalize(knockbackDirection);
 	knockback = normalizedDirection * knockbackForce;
+	health -= knockbackForce * 100.0f;
+	if (health <= 5)
+	{
+		speed = 12.0f;
+	}
 }
 
 

@@ -78,11 +78,9 @@ void CollisionManager::CheckEnemyPlayerCollisions()
 
     for (auto& enemy : enemies)
     {
+        // Handle collision between enemy and player
         if (enemy->GetCollider().CheckCollision(player->collider))
         {
-            // Handle collision between enemy and player
-            //player->TakeDamage(1); // example: reduce player's health by 1
-
             // Apply knockback
             glm::vec3 knockbackDirection = player->GetPosition() - enemy->GetPosition();
             float knockbackForce = 0.17f; // Customize this value as needed
@@ -107,12 +105,9 @@ void CollisionManager::CheckBossPlayerCollisions()
 
     for (auto& boss : bosses)
     {
+        // Handle collision between boss and player
         if (boss->collider.CheckCollision(player->collider))
         {
-            // Handle collision between enemy and player
-            //player->TakeDamage(1); // example: reduce player's health by 1
-
-  
             glm::vec3 direction = player->GetPosition() - boss->GetPosition();
             // Apply knockback
             float knockbackForce = 0.3f; // Customize this value as needed
