@@ -79,6 +79,7 @@ public:
 
 private:
 	bool m_trailerPlaying = false;
+	bool m_trailerBossPlaying = false;
 	float m_trailerStartTime = -1.0f;
 	Window m_window;
 	std::shared_ptr<Player> m_player;
@@ -96,7 +97,7 @@ private:
 	std::shared_ptr<Model> m_projectileModel;
 	std::shared_ptr<Model> m_enemyModel;
 	std::vector<std::shared_ptr<Enemy>> m_enemies;
-
+	
 	std::shared_ptr<Environment> m_environment;
 	
 	std::vector<glm::vec3> m_points;

@@ -212,10 +212,10 @@ void Application::Init()
 	collisionManager.SetPlayer(m_player);
 
 	// create boss
-	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
 
 	m_bossHeadModel = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/boss/Head.obj");
 	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
@@ -264,10 +264,10 @@ void Application::Init()
 void createCameraControlPoints(std::shared_ptr <Player> m_player, glm::vec3 controlPoints[4]) 
 {
 	
-	controlPoints[0] = m_player->GetPosition() + glm::vec3(5.0f, 8.0f, 7.0f);
-	controlPoints[1] = controlPoints[0] + m_player->GetPlayerFront() * 2.0f;
-	controlPoints[2] = controlPoints[0] + m_player->GetPlayerFront() * 4.0f + m_player->GetPlayerLeft() * 2.0f;
-	controlPoints[3] = controlPoints[0] + m_player->GetPlayerFront() * 6.0f;
+	controlPoints[0] = m_player->GetPosition() + glm::vec3(12.0f, 10.0f, 15.0f);
+	controlPoints[1] = controlPoints[0] + m_player->GetPlayerFront() * 4.0f;
+	controlPoints[2] = controlPoints[0] + m_player->GetPlayerFront() * 4.0f + m_player->GetPlayerLeft() * 3.0f;
+	controlPoints[3] = controlPoints[0] + m_player->GetPlayerFront() * 8.0f;
 	
 }
 
@@ -303,9 +303,9 @@ void Application::OnUpdate()
 			glm::vec3 curve2[4];
 			// Control points for the second curve (connects smoothly to the first curve)
 			curve2[0] = curve1[3];
-			curve2[1] = curve2[0] + glm::vec3(-12.0f, 39.0f, 6.0f);
-			curve2[2] = curve2[0] + glm::vec3(-3.0f, 17.0f, -5.0f);
-			curve2[3] = curve2[0] + glm::vec3(10.0f, 9.0f, 10.0f);
+			curve2[1] = curve2[0] + glm::vec3(-36.0f, 45.0f, 42.0f);
+			curve2[2] = curve2[0] + glm::vec3(-27.0f, 16.0f, -27.0f);
+			curve2[3] = curve2[0] + glm::vec3(45.0f, 8.0f, 45.0f);
 			
 			BezierCurve cameraPath2(curve2[0], curve2[1], curve2[2], curve2[3]);
 
@@ -315,7 +315,7 @@ void Application::OnUpdate()
 			}
 			std::vector<BezierCurve> curves = { cameraPath1, cameraPath2 };
 			CompositeBezierCurve cameraPath(curves);
-			float trailerDuration = 4.0f; // Duration of the trailer in seconds	
+			float trailerDuration = 9.0f; // Duration of the trailer in seconds	
 			float elapsedTime = currentTime - m_trailerStartTime; 
 			
 			float t = fmod(currentTime - m_trailerStartTime, trailerDuration) / trailerDuration;
@@ -324,90 +324,109 @@ void Application::OnUpdate()
 			if (elapsedTime >= trailerDuration)
 			{
 				m_trailerPlaying = false;
+				m_trailerBossPlaying = true;
+				m_trailerStartTime = currentTime;
 			}
 		}
 		else
 		{
-			// Move at cosntant speed along Bézier curve
-			//glm::vec3 bezierCurve[4];
-			//createCameraControlPoints(m_player, bezierCurve);
-
-			//BezierCurve cameraPath(bezierCurve[0], bezierCurve[1], bezierCurve[2], bezierCurve[3]);
-			//int numSamples = 1000;
-			//std::vector<float> arcLengthTable = cameraPath.generateArcLengthTable(numSamples);
-
-			//float trailerDuration = 11.0f; // Duration of the trailer in seconds
-			//float elapsedTime = currentTime - m_trailerStartTime;
-
-			//// Move at constant speed along Bézier curve
-			//float currentarclength = elapsedTime / trailerDuration; // normalize the elapsed time to range [0, 1]
-			//float t = cameraPath.findTForArcLength(arcLengthTable, currentarclength); // find the corresponding 't' value for the given arc length
-
-			////// Set the position of the camera
-			//m_playerCam->FollowPlayerAlongBezierCurve(m_player, cameraPath, t);
-			
-			m_playerCam->FollowPlayer(m_player);
-		}
-
-		// update bosses
-		for (auto& boss : m_bosses)
-		{
-			boss->Update(deltaTime, m_player->GetPosition());
-		}
-		snakeJointAngle = glm::sin(currentTime / 0.8) * 20.0f;
-		m_bosses.erase(std::remove_if(m_bosses.begin(), m_bosses.end(),
-			[](const std::shared_ptr<Boss>& boss) {
-				return !boss->IsAlive();
-			}), m_bosses.end());
-
-		// update enemies, delete dead enemies
-		for (auto& enemy : m_enemies)
-		{
-			enemy->Update(deltaTime, m_player->GetPosition());
-		}	
-		m_enemies.erase(std::remove_if(m_enemies.begin(), m_enemies.end(),
-			[](const std::shared_ptr<Enemy>& enemy) {
-				return !enemy->IsAlive();
-			}), m_enemies.end());
-		
-		// update projectile, delete dead projectiles
-		m_projectiles.erase(std::remove_if(m_projectiles.begin(), m_projectiles.end(),
-			[&](const std::shared_ptr<Projectile>& projectile)
+			if (m_trailerBossPlaying)
 			{
-				bool shouldDestroy = projectile->Update(deltaTime);
+				// Move at cosntant speed along Bézier curve
+				glm::vec3 bezierCurve[4];
+				
+				bezierCurve[0] = m_bosses[0]->GetPosition() + glm::vec3(9.0f, 3.0f, -10.0f);
+				bezierCurve[1] = bezierCurve[0] + glm::vec3(-9.0f, 9.0f, 9.0f);
+				bezierCurve[2] = bezierCurve[0] + glm::vec3(11.0f, 6.0f, -12.0f);
+				bezierCurve[3] = bezierCurve[0] + glm::vec3(-17.0f, 4.0f, 16.0f);
+				
+				BezierCurve cameraPath(bezierCurve[0], bezierCurve[1], bezierCurve[2], bezierCurve[3]);
+				int numSamples = 1500;
+				std::vector<float> arcLengthTable = cameraPath.generateArcLengthTable(numSamples);
 
-				for (auto& enemy : m_enemies)
+				float trailerDuration = 8.0f; // Duration of the trailer in seconds
+				float elapsedTime = currentTime - m_trailerStartTime;
+
+				// Move at constant speed along Bézier curve
+				float currentarclength = elapsedTime / trailerDuration; // normalize the elapsed time to range [0, 1]
+				float t = cameraPath.findTForArcLength(arcLengthTable, currentarclength); // find the corresponding 't' value for the given arc length
+				//// Set the position of the camera
+				m_playerCam->FollowBossAlongBezierCurveConstanly(m_bosses[0], cameraPath, t);
+				if (elapsedTime >= trailerDuration)
 				{
-					if (!enemy->IsAlive()) continue;
-					if (enemy->CheckCollision(projectile->collider))
-					{
-						enemy->TakeDamage(projectile->GetDamage());
-						shouldDestroy = true;
-					}
+					m_trailerBossPlaying = false;
 				}
+			}
+			else {
+				m_playerCam->FollowPlayer(m_player);
+			}
+		}
 
-				for (auto& boss : m_bosses)
+		if (!m_trailerBossPlaying && !m_trailerPlaying)
+		{
+			// update bosses
+			for (auto& boss : m_bosses)
+			{
+				boss->Update(deltaTime, m_player->GetPosition());
+			}
+			snakeJointAngle = glm::sin(currentTime / 0.6) * 25.0f;
+			m_bosses.erase(std::remove_if(m_bosses.begin(), m_bosses.end(),
+				[](const std::shared_ptr<Boss>& boss) {
+					return !boss->IsAlive();
+				}), m_bosses.end());
+
+			// update enemies, delete dead enemies
+			for (auto& enemy : m_enemies)
+			{
+				enemy->Update(deltaTime, m_player->GetPosition());
+			}
+			m_enemies.erase(std::remove_if(m_enemies.begin(), m_enemies.end(),
+				[](const std::shared_ptr<Enemy>& enemy) {
+					return !enemy->IsAlive();
+				}), m_enemies.end());
+
+			// update projectile, delete dead projectiles
+			m_projectiles.erase(std::remove_if(m_projectiles.begin(), m_projectiles.end(),
+				[&](const std::shared_ptr<Projectile>& projectile)
 				{
-					if (!boss->IsAlive()) continue;
-					if (boss->CheckCollision(projectile->collider))
+					bool shouldDestroy = projectile->Update(deltaTime);
+
+					for (auto& enemy : m_enemies)
 					{
-						for (auto& bossPart : m_bosses)
+						if (!enemy->IsAlive()) continue;
+						if (enemy->CheckCollision(projectile->collider))
 						{
-							bossPart->TakeDamage(projectile->GetDamage());
+							enemy->TakeDamage(projectile->GetDamage());
+							shouldDestroy = true;
 						}
-						shouldDestroy = true;
 					}
-				}
 
-				return shouldDestroy;
-			}), m_projectiles.end());
+					for (auto& boss : m_bosses)
+					{
+						if (!boss->IsAlive()) continue;
+						if (boss->CheckCollision(projectile->collider))
+						{
+							for (auto& bossPart : m_bosses)
+							{
+								bossPart->TakeDamage(projectile->GetDamage());
+							}
+							shouldDestroy = true;
+						}
+					}
 
-		collisionManager.enemies = m_enemies;
-		collisionManager.bosses = m_bosses;
-		collisionManager.projectiles = m_projectiles;
-		collisionManager.SetPlayer(m_player);
-		collisionManager.CheckCollisions();
-		
+					return shouldDestroy;
+				}), m_projectiles.end());
+
+			collisionManager.enemies = m_enemies;
+			collisionManager.bosses = m_bosses;
+			collisionManager.projectiles = m_projectiles;
+			collisionManager.SetPlayer(m_player);
+			collisionManager.CheckCollisions();
+		}
+		else 
+		{
+			snakeJointAngle = glm::sin(currentTime / 0.6) * 25.0f;
+		}
 		// update animated Model
 		m_player->animatedModel->Update(deltaTime);
 
