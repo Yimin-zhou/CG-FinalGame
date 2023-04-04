@@ -7,7 +7,7 @@ Enemy::Enemy(const glm::vec3& pos, float sp, uint32_t hp) :
 	isDead(false),
 	model(),
 	yaw(0.0f),
-	collider(pos, 0.9f)
+	collider(pos, 1.5f)
 {
 
 }

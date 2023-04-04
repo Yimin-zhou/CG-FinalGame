@@ -112,10 +112,11 @@ void CollisionManager::CheckBossPlayerCollisions()
             // Handle collision between enemy and player
             //player->TakeDamage(1); // example: reduce player's health by 1
 
+  
+            glm::vec3 direction = player->GetPosition() - boss->GetPosition();
             // Apply knockback
-            glm::vec3 knockbackDirection = player->GetPosition() - boss->GetPosition();
             float knockbackForce = 0.3f; // Customize this value as needed
-            player->ApplyKnockback(knockbackDirection, knockbackForce);
+            player->ApplyKnockback(direction, knockbackForce);
 
             // Play sound effect
             // You can use your preferred sound library to play a sound effect here
@@ -123,6 +124,26 @@ void CollisionManager::CheckBossPlayerCollisions()
 
             // Apply visual effect, e.g., flashing color on player model
             // Example: player->model->SetColorFlash(1.0, 0.0, 0.0, 0.3);
+
+
+            //// Calculate the vector between the boss and player
+            //float distance = glm::length(direction);
+            //float overlap = player->collider.GetRadius() + boss->collider.GetRadius() - distance;
+
+            //// Normalize the vector and scale it by the overlap
+            //glm::vec3 normalizedDirection = direction / distance;
+            //glm::vec3 separation = normalizedDirection * overlap * 1.5f;
+
+            //// Move the boss and player away from each other to prevent clipping
+            //player->position.x = player->GetPosition().x - separation.x;
+            //player->position.z = player->GetPosition().z - separation.z;
+            //boss->position.x = boss->GetPosition().x + separation.x;
+            //boss->position.z = boss->GetPosition().z + separation.z;
+
+            //// Update the colliders' positions
+            //player->collider.SetPosition(player->GetPosition());
+            //boss->collider.SetPosition(boss->GetPosition());
+            
         }
     }
 }

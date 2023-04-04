@@ -7,6 +7,7 @@
 
 #include "compositeBezier.h"
 #include "player.h"
+#include "boss.h"
 
 class Camera 
 {
@@ -19,6 +20,7 @@ public:
 	void FollowPlayer(std::shared_ptr<Player> player);
 	void FollowPlayerAlongBezierCurve(std::shared_ptr<Player> player, const BezierCurve& cameraPath, float t);
 	void FollowPlayerAlongCompositeBezierCurve(std::shared_ptr<Player> player, const CompositeBezierCurve& cameraPath, float t);
+	void FollowBossAlongBezierCurveConstanly(std::shared_ptr<Boss> boss, const BezierCurve& cameraPath, float t);
 
 	void Zoom(float offset);
 
