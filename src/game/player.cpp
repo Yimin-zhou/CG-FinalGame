@@ -8,7 +8,7 @@ Player::Player(glm::vec3 startPosition, float playerSpeed) :
 	shootingInterval(0.2f),
 	shootingTimer(0.0f),
 	abilityTimer(0.0f),
-	abilityInterval(5.0f),
+	abilityInterval(10.0f),
 	model(),
 	m_front(glm::vec3(0.0f, 0.0f, 1.0f)),
 	m_left(glm::vec3(1.0f, 0.0f, 0.0f)),
