@@ -203,7 +203,7 @@ void Application::Init()
 	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
 	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 14, 0), 4.0f, 31);
 
-	m_bossHeadModel = std::make_shared<Model>(bossHeadPbrMaterial, "resources/boss/Head.obj");
+	m_bossHeadModel = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/boss/Head.obj");
 	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
 	m_bossBodyModel_2 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body2.obj");
 	m_bossBodyModel_3 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body3.obj");
