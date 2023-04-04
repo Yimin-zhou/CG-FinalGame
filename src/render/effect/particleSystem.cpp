@@ -130,11 +130,6 @@ void ParticleSystem::SetShader(Shader& shader)
 	m_shader = shader;
 }
 
-void ParticleSystem::SetModelMatrix(glm::mat4& modelMatrix)
-{
-	m_modelMatrix = modelMatrix;
-}
-
 void ParticleSystem::SetViewMatrix(glm::mat4& viewMatrix)
 {
 	m_viewMatrix = viewMatrix;

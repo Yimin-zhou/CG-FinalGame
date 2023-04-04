@@ -3,7 +3,7 @@
 Application::Application()
 	: m_window("Final Project", glm::ivec2(1920, 1080),OpenGLVersion::GL45),
 	m_playerCam(std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, -1.0f))),
-	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 6.0f, 0.0f))),
+	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 16.0f, 0.0f))),
 	is_topDown(false)
 {
 	m_window.registerKeyCallback(
@@ -129,14 +129,20 @@ std::shared_ptr<XMaterial> Application::InitMaterial(Shader& shader)
 
 void Application::InitModel()
 {
-	// create models
-	std::shared_ptr<Model> model_floor = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/floor/floor.obj");
-	std::shared_ptr<Model> model_wall = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/wall/wall.obj");
+	// create models for environment
+	std::shared_ptr<Model> model_floor = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/env/floor/floor.obj");
 
-	// create environment, contains static objects
 	std::vector<std::shared_ptr<Model>> models;
 	models.push_back(model_floor);
-	models.push_back(model_wall);
+
+	// Add room models
+	uint32_t roomPropCount = 13;
+	for (int i = 1; i <= roomPropCount; ++i)
+	{
+		auto model_room = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/env/" + std::to_string(i) + "/room_" + std::to_string(i) + ".obj");
+		models.push_back(model_room);
+	}
+
 	m_environment = std::make_shared<Environment>(models);
 }
 
@@ -175,40 +181,42 @@ void Application::Init()
 
 	// 1 material -> multiple objects
 	std::shared_ptr<XMaterial> enemyPbrMaterial = InitMaterial(m_mainShader);
+	std::shared_ptr<XMaterial> bossBodyPbrMaterial = InitMaterial(m_mainShader);
 	std::shared_ptr<XMaterial> projectilePbrMaterial = InitMaterial(m_projectileShader);
 
 	// init models with unique materials
 	InitModel();
 
 	// create player
-	m_player = std::make_shared<Player>(glm::vec3(0.0f, 0.0f, 0.0f), 7.0f);
+	m_player = std::make_shared<Player>(glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
 	m_player->model = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/player/player.obj");
 
 	// create enemies
 	InitEnemies(enemyPbrMaterial, 10);
 
 	// create boss
-	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
-	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+	{
+		std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+		std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+		std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
+		std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(0, 11, 0), 3.0f, 11);
 
-	m_bossHeadModel = std::make_shared<Model>(bossHeadPbrMaterial, "resources/boss/Head.obj");
-	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
-	m_bossBodyModel_2 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body2.obj");
-	m_bossBodyModel_3 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body3.obj");
+		m_bossHeadModel = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/boss/Head.obj");
+		m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
+		m_bossBodyModel_2 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body2.obj");
+		m_bossBodyModel_3 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body3.obj");
 
-	m_bossHead->model = m_bossHeadModel;
-	m_bossBody_1->model = m_bossBodyModel_1;
-	m_bossBody_2->model = m_bossBodyModel_2;
-	m_bossBody_3->model = m_bossBodyModel_3;
+		m_bossHead->model = m_bossHeadModel;
+		m_bossBody_1->model = m_bossBodyModel_1;
+		m_bossBody_2->model = m_bossBodyModel_2;
+		m_bossBody_3->model = m_bossBodyModel_3;
 
-	m_bosses.push_back(m_bossHead);
-	m_bosses.push_back(m_bossBody_1);
-	m_bosses.push_back(m_bossBody_2);
-	m_bosses.push_back(m_bossBody_3);
+		m_bosses.push_back(m_bossHead);
+		m_bosses.push_back(m_bossBody_1);
+		m_bosses.push_back(m_bossBody_2);
+		m_bosses.push_back(m_bossBody_3);
+	}
 	
-
 	// init projectile model
 	m_projectileModel = std::make_shared<Model>(projectilePbrMaterial, "resources/projectile.obj");
 
@@ -216,15 +224,17 @@ void Application::Init()
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_animatedModel = std::make_shared<AnimatedModel>(enemyPbrMaterial, framePaths);
 
-	// init particle system
-	m_particleSystem = std::make_shared<ParticleSystem>();
-	m_particleProps.colorBegin = glm::vec4(0.9f, 0.9f, 0.7f, 1.0f);
-	m_particleProps.colorEnd = glm::vec4(0.1f, 0.8f, 0.1f, 0.0f);
-	m_particleProps.sizeBegin = 0.5f, m_particleProps.sizeVariation = 0.3f, m_particleProps.sizeEnd = 0.0f;
-	m_particleProps.lifeTime = 5.0f;
-	m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
-	m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
-	m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+	{
+		// init particle system
+		m_particleSystem = std::make_shared<ParticleSystem>();
+		m_particleProps.colorBegin = glm::vec4(0.9f, 0.9f, 0.7f, 1.0f);
+		m_particleProps.colorEnd = glm::vec4(0.1f, 0.8f, 0.1f, 0.0f);
+		m_particleProps.sizeBegin = 0.5f, m_particleProps.sizeVariation = 0.3f, m_particleProps.sizeEnd = 0.0f;
+		m_particleProps.lifeTime = 5.0f;
+		m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
+		m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+	}
 
 	// startTrailer
 	m_trailerPlaying = true;
@@ -416,11 +426,11 @@ void Application::ShadowRender()
 				m_spotLights, m_topDownCam->GetPosition());
 		}
 
-		// render objects
+		// render unique material objects
 		for (auto& m : m_environment->models)
 		{
 			m->material->SetShader(m_shadowShader);
-			m->material->SetMatrix(glm::mat4(1), view, proj);
+			m->material->SetMatrix(glm::scale(glm::mat4(1), glm::vec3(0.7f)), view, proj); // scale down the environment
 			m->material->Apply();
 			if (!is_topDown) {
 				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
@@ -539,176 +549,191 @@ void Application::MainRender()
 			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
 		}
 
-		//// set transformations for boss
-		int snakeLength = 4;
-		// create tree root (upperarm origin) head
-		glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
-		glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
-		// let the head face player by GetModelMatrix()
-		glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() *  translation_snake * rotation_body;
-		std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
-		std::vector<std::shared_ptr<ObjectNode>> tempObjects;
-		tempObjects.push_back(root_snake);
+		// render boss
+		{
+			//// set transformations for boss
+			int snakeLength = 4;
+			// create tree root (upperarm origin) head
+			glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
+			glm::mat4 rotation_body = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			// let the head face player by GetModelMatrix()
+			glm::mat4 bossModelMat = m_bosses[0]->GetModelMatrix() *  translation_snake * rotation_body;
+			std::shared_ptr<ObjectNode> root_snake = std::make_shared<ObjectNode>(bossModelMat);
+			std::vector<std::shared_ptr<ObjectNode>> tempObjects;
+			tempObjects.push_back(root_snake);
 
-		// body
-		for (int i = 0; i < snakeLength - 1; ++i)
-		{
-			glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0));
-			glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
-			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(m_bosses[0]->GetYaw()), glm::vec3(0, 1, 0));
-			bossModelMat = translation_snake * rotation_snake;
-			std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
-			tempObjects[i]->addChild(node);
-			tempObjects.push_back(node);
+			// body
+			for (int i = 0; i < snakeLength - 1; ++i)
+			{
+				glm::mat4 translation_snake = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0));
+				glm::mat4 rotation_snake = glm::rotate(glm::mat4(1.0f), glm::radians(snakeJointAngle), glm::vec3(0, 1, 0));
+				glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(m_bosses[0]->GetYaw()), glm::vec3(0, 1, 0));
+				bossModelMat = translation_snake * rotation_snake;
+				std::shared_ptr<ObjectNode> node = std::make_shared<ObjectNode>(bossModelMat);
+				tempObjects[i]->addChild(node);
+				tempObjects.push_back(node);
+			}
+			traverse(root_snake);
+			// render head and body
+			for (int i = 0; i < snakeLength; ++i)
+			{
+				if (!m_bosses[i]->IsAlive()) continue;
+				glm::mat4 modelMat_boss = tempObjects[i]->transform;
+				m_bosses[i]->model->material->SetShader(m_mainShader);
+				m_bosses[i]->model->material->Apply();
+				m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
+				m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+				{
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+					m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+				}
+				if (!is_topDown) {
+					m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				}
+				else {
+					m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				}
+			}
 		}
-		traverse(root_snake);
-		// render head and body
-		for (int i = 0; i < snakeLength; ++i)
+
+		// render player
 		{
-			if (!m_bosses[i]->IsAlive()) continue;
-			glm::mat4 modelMat_boss = tempObjects[i]->transform;
-			m_bosses[i]->model->material->SetShader(m_mainShader);
-			m_bosses[i]->model->material->Apply();
-			m_bosses[i]->model->material->SetMatrix(modelMat_boss, view, proj);
-			m_bosses[i]->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			if (!is_topDown) {
+				m_player->SetYaw(m_playerCam->GetYaw());
+			}
+			else {
+				m_player->SetYaw(m_player->GetYaw());
+			}
+			glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
+			modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
+			m_player->model->material->SetShader(m_mainShader);
+			m_player->model->material->SetMatrix(modelMat, view, proj);
+			m_player->model->material->Apply();
+			m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			{
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-				m_bosses[i]->model->material->SetUniform("shadowMap", 3);
+				m_player->model->material->SetUniform("shadowMap", 3);
 			}
-			if (!is_topDown) {
-				m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (!is_topDown) 
+			{
+				m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 			}
-			else {
-				m_bosses[i]->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			else 
+			{
+				m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 			}
-		}
-
-		// set player matrix & render
-		if (!is_topDown) {
-			m_player->SetYaw(m_playerCam->GetYaw());
-		}
-		else {
-			m_player->SetYaw(m_player->GetYaw());
-		}
-		glm::mat4 modelMat = glm::translate(glm::mat4(1), glm::vec3(m_player->GetPosition()));
-		modelMat = glm::rotate(modelMat, glm::radians(m_player->GetYaw()), { 0, 1, 0 }); // rotate player with camera
-		m_player->model->material->SetShader(m_mainShader);
-		m_player->model->material->SetMatrix(modelMat, view, proj);
-		m_player->model->material->Apply();
-		m_player->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-		{
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-			m_player->model->material->SetUniform("shadowMap", 3);
-		}
-		if (!is_topDown) 
-		{
-			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
-		}
-		else 
-		{
-			m_player->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
 		}
 		
-		// render animated model
-		m_animatedModel->material->SetShader(m_mainShader);
-		m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
-		m_animatedModel->material->Apply();
-		m_animatedModel->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+		// render animated model TODO: add to player
 		{
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-			m_animatedModel->material->SetUniform("shadowMap", 3);
-		}
-		if (!is_topDown) {
-			m_animatedModel->Render(m_directionalLight, m_pointLights,
-				m_spotLights, m_playerCam->GetPosition());
-		}
-		else {
-			m_animatedModel->Render(m_directionalLight, m_pointLights,
-				m_spotLights, m_topDownCam->GetPosition());
-		}
-
-		// render objects
-		for (auto& m : m_environment->models)
-		{
-			m->material->SetShader(m_mainShader);
-			m->material->SetMatrix(glm::mat4(1), view, proj);
-			m->material->Apply();
-			m->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+			m_animatedModel->material->SetShader(m_mainShader);
+			m_animatedModel->material->SetMatrix(glm::mat4(1), view, proj);
+			m_animatedModel->material->Apply();
+			m_animatedModel->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
 			{
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-				m->material->SetUniform("shadowMap", 3);
+				m_animatedModel->material->SetUniform("shadowMap", 3);
 			}
 			if (!is_topDown) {
-				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				m_animatedModel->Render(m_directionalLight, m_pointLights,
+					m_spotLights, m_playerCam->GetPosition());
 			}
 			else {
-				m->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				m_animatedModel->Render(m_directionalLight, m_pointLights,
+					m_spotLights, m_topDownCam->GetPosition());
+			}
+		}
+
+		// render unique material env props
+		{
+			for (auto& m : m_environment->models)
+			{
+				m->material->SetShader(m_mainShader);
+				m->material->SetMatrix(glm::scale(glm::mat4(1), glm::vec3(0.7f)), view, proj); // scale down the environment
+				m->material->Apply();
+				m->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+				{
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+					m->material->SetUniform("shadowMap", 3);
+				}
+				if (!is_topDown) {
+					m->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				}
+				else {
+					m->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				}
 			}
 		}
 
 		// render enemies
-		for (auto& e : m_enemies)
 		{
-			if (!m_player->is_abilityOn){
-				if (!e->IsAlive()) continue;
-				e->model->material->SetShader(m_mainShader);
-				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
-				e->model->material->SetMatrix(modelMat_enemy, view, proj);
-				e->model->material->Apply();
-				e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
-				glActiveTexture(GL_TEXTURE3);
-				glBindTexture(GL_TEXTURE_2D, m_shadowTex);
-				e->model->material->SetUniform("shadowMap", 3);
-			}
-			else {
-				if (!e->IsAlive()) continue;
-				e->model->material->SetShader(m_xToonShader);
-				glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
-				e->model->material->SetMatrix(modelMat_enemy, view, proj);
-				e->model->material->Apply();
-				m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
-				e->model->material->SetUniform("toonMap", 4);
-				e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
-				e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());
-				//e->model->material->SetUniform("distanceOffset", );
-				//e->model->material->SetUniform("distanceScale", );
-			}
-			if (!is_topDown) {
-				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
-			}
-			else {
-				e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			for (auto& e : m_enemies)
+			{
+				if (!m_player->is_abilityOn){
+					if (!e->IsAlive()) continue;
+					e->model->material->SetShader(m_mainShader);
+					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					e->model->material->SetMatrix(modelMat_enemy, view, proj);
+					e->model->material->Apply();
+					e->model->material->SetUniform("lightSpaceMatrix", m_shadowCam->GetOthoProjMatrix() * m_shadowCam->GetOthoViewMatrix());
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, m_shadowTex);
+					e->model->material->SetUniform("shadowMap", 3);
+				}
+				else {
+					if (!e->IsAlive()) continue;
+					e->model->material->SetShader(m_xToonShader);
+					glm::mat4 modelMat_enemy = glm::translate(glm::mat4(1), glm::vec3(e->GetPosition()));
+					e->model->material->SetMatrix(modelMat_enemy, view, proj);
+					e->model->material->Apply();
+					m_toonTexture->bind(GL_TEXTURE4); // TODO TOON MAP
+					e->model->material->SetUniform("toonMap", 4);
+					e->model->material->SetUniform("viewPosition", m_playerCam->GetPosition());
+					e->model->material->SetUniform("lightPosition", m_directionalLight->getDirection());
+					//e->model->material->SetUniform("distanceOffset", );
+					//e->model->material->SetUniform("distanceScale", );
+				}
+				if (!is_topDown) {
+					e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				}
+				else {
+					e->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				}
 			}
 		}
 
 		// render projectiles
-		for (auto& p : m_projectiles)
 		{
-			// render projectile
-			glm::mat4 modelMat_projectile = glm::translate(glm::mat4(1), glm::vec3(p->GetPosition()));
-			p->model->material->SetMatrix(modelMat_projectile, view, proj);
-			p->model->material->Apply();
-			p->model->material->SetUniform("emissiveColor", glm::vec3(0.1, 0.8, 0.95));
-			if (!is_topDown) {
-				p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
-			}
-			else {
-				p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			for (auto& p : m_projectiles)
+			{
+				// render projectile
+				glm::mat4 modelMat_projectile = glm::translate(glm::mat4(1), glm::vec3(p->GetPosition()));
+				p->model->material->SetMatrix(modelMat_projectile, view, proj);
+				p->model->material->Apply();
+				p->model->material->SetUniform("emissiveColor", glm::vec3(0.1, 0.8, 0.95));
+				if (!is_topDown) {
+					p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				}
+				else {
+					p->model->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				}
 			}
 		}
 
+
 		// update particles
-		m_particleSystem->Update(deltaTime);
-		// render particles
-		m_particleSystem->SetShader(m_particleShader);
-		m_particleSystem->SetModelMatrix(modelMat);
-		m_particleSystem->SetViewMatrix(view);
-		m_particleSystem->SetProjectionMatrix(proj);
-		m_particleSystem->Render();
+		{
+			m_particleSystem->Update(deltaTime);
+			// render particles
+			m_particleSystem->SetShader(m_particleShader);
+			m_particleSystem->SetViewMatrix(view);
+			m_particleSystem->SetProjectionMatrix(proj);
+			m_particleSystem->Render();
+		}
 	}
 
 	
