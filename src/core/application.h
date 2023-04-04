@@ -27,7 +27,7 @@ DISABLE_WARNINGS_POP()
 #include "render/light/pointLight.h"
 #include "render/light/spotLight.h"
 #include "render/effect/particleSystem.h"
-#include "render/effect/postprocessing.h"
+#include "render/effect/bloom.h"
 
 #include "game/player.h"
 #include "game/camera.h"
@@ -126,6 +126,8 @@ private:
 	bool is_topDown = false;
 
 	// post processing
-	Shader m_bloomShader;
-	std::shared_ptr<PostProcessing> m_postProcessing;
+	Shader m_bloomDownShader;
+	Shader m_bloomUpShader;
+	Shader m_bloomResultShader;
+	std::shared_ptr<Bloom> m_bloomPP;
 };

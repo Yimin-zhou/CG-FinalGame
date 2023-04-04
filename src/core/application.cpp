@@ -82,10 +82,21 @@ void Application::InitShader()
 	xToonShader.addStage(GL_FRAGMENT_SHADER, "shaders/xtoon_frag.glsl");
 	m_xToonShader = xToonShader.build();
 
-	ShaderBuilder bloomShader;
-	bloomShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert.glsl");
-	bloomShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag.glsl");
-	m_bloomShader = bloomShader.build();
+	ShaderBuilder bloomDownShader;
+	bloomDownShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert_down.glsl");
+	bloomDownShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag_downsample.glsl");
+	m_bloomDownShader = bloomDownShader.build();
+
+	ShaderBuilder bloomUpShader;
+	bloomUpShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert_up.glsl");
+	bloomUpShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag_upsample.glsl");
+	m_bloomUpShader = bloomUpShader.build();
+
+	ShaderBuilder bloomResultShader;
+	bloomResultShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert_result.glsl");
+	bloomResultShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag_result.glsl");
+	m_bloomResultShader = bloomResultShader.build();
+
 }
 
 void Application::InitLight()
@@ -243,7 +254,8 @@ void Application::Init()
 
 	{
 		// init postprocessing
-		m_postProcessing = std::make_shared<PostProcessing>(m_window.getWindowSize().x, m_window.getWindowSize().y);
+		m_bloomPP = std::make_shared<Bloom>(m_window.getWindowSize().x, m_window.getWindowSize().y, 5);
+		m_bloomPP->SetShader(m_bloomDownShader, m_bloomUpShader, m_bloomResultShader);
 	}
 
 	// startTrailer
@@ -516,7 +528,7 @@ void Application::ShadowRender()
 
 void Application::MainRender()
 {
-	m_postProcessing->BindFramebuffer();
+	m_bloomPP->BindHDRFramebuffer();
 	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -747,13 +759,13 @@ void Application::MainRender()
 			m_particleSystem->Render();
 		}
 
-		m_postProcessing->UnbindFramebuffer();
+		m_bloomPP->UnbindFramebuffer();
 	}
 
 	
 
 #if _DEBUG
-	DebugWindows();
+	//DebugWindows();
 #else
 	ImGui::Begin("Debug Info");
 	ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
@@ -766,10 +778,13 @@ void Application::MainRender()
 
 void Application::PostProcssing()
 {
-	m_postProcessing->SetShader(m_bloomShader);
-	m_postProcessing->RenderToScreen();
+	m_bloomPP->BindDownUpFramebuffer();
+	m_bloomPP->RenderDownsample();
+	m_bloomPP->RenderUpsample();
+	m_bloomPP->RenderHDR();
 
 	m_window.swapBuffers();
+
 }
 
 void Application::ProcessContinousInput()
