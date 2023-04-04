@@ -939,6 +939,8 @@ void Application::DebugWindows()
 	ImGui::End();
 
 	// player info
+	glm::vec3 subdis = m_playerCam->GetPosition() - m_directionalLight->getPosition();
+	float dis = glm::clamp(glm::length(subdis)* 0.01,0.0,1.0);
 	ImGui::Begin("Player Info");
 	ImGui::Text("Player Health: %d", m_player->GetHealth());
 	ImGui::Text("Player Position: %.1f %.1f %.1f", m_player->GetPosition().x, m_player->GetPosition().y, m_player->GetPosition().z);
@@ -947,6 +949,8 @@ void Application::DebugWindows()
 	ImGui::Text("Player Front: %.1f %.1f %.1f", m_player->GetPlayerFront().x, m_player->GetPlayerFront().y, m_player->GetPlayerFront().z);
 	ImGui::Text("Player Left: %.1f %.1f %.1f", m_player->GetPlayerLeft().x, m_player->GetPlayerLeft().y, m_player->GetPlayerLeft().z);
 	ImGui::Text("Player Ability On: %s", m_player->is_abilityOn ? "true" : "false");
+	ImGui::Text("View Pos - Light Pos = %.1f %.1f %.1f", subdis.x, subdis.y, subdis.z);
+	ImGui::Text("Distance = %.1f", dis);
 	ImGui::End();
 
 	// camera info
