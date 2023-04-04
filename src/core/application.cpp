@@ -86,12 +86,17 @@ void Application::InitShader()
 	bloomShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_vert.glsl");
 	bloomShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_frag.glsl");
 	m_bloomShader = bloomShader.build();
+
+	ShaderBuilder bloomBlurShader;
+	bloomBlurShader.addStage(GL_VERTEX_SHADER, "shaders/bloom_blur_vert.glsl");
+	bloomBlurShader.addStage(GL_FRAGMENT_SHADER, "shaders/bloom_blur_frag.glsl");
+	m_bloomBlurShader = bloomBlurShader.build();
 }
 
 void Application::InitLight()
 {
 	// setup lights
-	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 2.0f);
+	m_directionalLight = std::make_shared<DirectionalLight>(glm::vec3(10.0f, 30.0f, 30.0f), glm::vec3(1.0f), 1.0f);
 	// point light
 	std::shared_ptr<PointLight> pointLight_1 = std::make_shared<PointLight>(glm::vec3(10.0f, 5.0f, -10.0f),
 		glm::vec3(0.95f, 0.2f, 0.9f), 100.0f, 1.0f, 0.2f, 0.2f);
@@ -244,6 +249,7 @@ void Application::Init()
 	{
 		// init postprocessing
 		m_postProcessing = std::make_shared<PostProcessing>(m_window.getWindowSize().x, m_window.getWindowSize().y);
+		m_postProcessing->SetShader(m_bloomShader, m_bloomBlurShader);
 	}
 
 	// startTrailer
@@ -766,7 +772,7 @@ void Application::MainRender()
 
 void Application::PostProcssing()
 {
-	m_postProcessing->SetShader(m_bloomShader);
+	m_postProcessing->BlurScreenTex();
 	m_postProcessing->RenderToScreen();
 
 	m_window.swapBuffers();
@@ -816,7 +822,7 @@ void Application::ProcessContinousInput()
 		std::shared_ptr<Projectile> projectile = std::make_shared<Projectile>(glm::vec3(m_player->GetPosition().x , 
 			m_player->GetPosition().y + 1.5f, m_player->GetPosition().z),
 			m_player->GetPlayerFront(),
-			15.0f, 2, m_projectileModel); // 1.5f is the player height(offset)
+			20.0f, 2, m_projectileModel); // 1.5f is the player height(offset)
 
 		m_projectiles.push_back(projectile);
 

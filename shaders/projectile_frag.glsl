@@ -18,7 +18,8 @@ layout(location = 13) uniform vec3 cameraPos;
 in vec3 fragPosition;
 in vec3 fragNormal;
 in vec2 fragTexCoord;
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 bloomColor;
 
 in vec4 temp;
 
@@ -289,5 +290,16 @@ void main()
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2)); // gamma correction
 
-    fragColor = vec4(vec3(emissiveColor), 1.0);
+    fragColor = vec4(vec3(emissiveColor * 10), 1.0);
+
+    float brightness = 0.2126 * fragColor.r + 0.7152 * fragColor.g + 0.0722 * fragColor.b;
+    if(brightness > 0.8)
+    {
+        bloomColor = fragColor;
+    }
+    else
+    {
+        bloomColor = vec4(vec3(0), 1);
+    }
+
 }

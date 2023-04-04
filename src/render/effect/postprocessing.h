@@ -13,9 +13,11 @@ public:
 
 	void BindFramebuffer();
 	void UnbindFramebuffer();
+
+	void BlurScreenTex();
 	void RenderToScreen();
 
-	void SetShader(Shader& shader);
+	void SetShader(Shader& screen, Shader& blur);
 
 	void resize(int width, int height);
 
@@ -28,6 +30,11 @@ private:
 
 	Shader m_screenShader;
 	GLuint m_quadVAO, m_quadVBO;
-	GLuint m_framebuffer, m_rt;
+	GLuint m_framebuffer, m_rt[2];
 	GLuint m_depthStencilRBO;
+
+	GLuint m_pingpongFBO[2];
+	GLuint m_pingpongBuffer[2];
+	Shader m_blurShader;
+
 };

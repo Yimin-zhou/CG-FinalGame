@@ -126,6 +126,7 @@ private:
 	bool is_topDown = false;
 
 	// post processing
+	Shader m_bloomBlurShader;
 	Shader m_bloomShader;
 	std::shared_ptr<PostProcessing> m_postProcessing;
 };
