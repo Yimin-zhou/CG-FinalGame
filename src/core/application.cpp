@@ -214,10 +214,10 @@ void Application::Init()
 	collisionManager.SetPlayer(m_player);
 
 	// create boss
-	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
-	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 31);
+	std::shared_ptr<Boss> m_bossHead = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 500);
+	std::shared_ptr<Boss> m_bossBody_1 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 500);
+	std::shared_ptr<Boss> m_bossBody_2 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 500);
+	std::shared_ptr<Boss> m_bossBody_3 = std::make_shared<Boss>(glm::vec3(20, 1, 15), 4.0f, 500);
 
 	m_bossHeadModel = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/boss/Head.obj");
 	m_bossBodyModel_1 = std::make_shared<Model>(bossBodyPbrMaterial, "resources/boss/Body.obj");
