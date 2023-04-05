@@ -112,16 +112,16 @@ void Application::InitLight()
 	m_pointLights.push_back(pointLight_4);
 
 	// spot light
-	std::shared_ptr<SpotLight> spotLight_1 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, -20.0f),
+	std::shared_ptr<SpotLight> spotLight_1 = std::make_shared<SpotLight>(glm::vec3(30.0f, 15.0f, -30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.5f, 0.4f, 0.9f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_2 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, 20.0f),
+	std::shared_ptr<SpotLight> spotLight_2 = std::make_shared<SpotLight>(glm::vec3(-30.0f, 15.0f, 30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.95f, 0.2f, 0.2f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_3 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, -20.0f),
+	std::shared_ptr<SpotLight> spotLight_3 = std::make_shared<SpotLight>(glm::vec3(-30.0f, 15.0f, -30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.3f, 0.8f, 0.8f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_4 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, 20.0f),
+	std::shared_ptr<SpotLight> spotLight_4 = std::make_shared<SpotLight>(glm::vec3(30.0f, 15.0f, 30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.8f, 0.9f, 0.2f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
 	m_spotLights.push_back(spotLight_1);
@@ -245,6 +245,15 @@ void Application::Init()
 		m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
 		m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+
+		// health area particle
+		m_healthAreaParticleProps.colorBegin = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
+		m_healthAreaParticleProps.colorEnd = glm::vec4(0.1f, 0.9f, 0.9f, 0.0f);
+		m_healthAreaParticleProps.sizeBegin = 0.4f, m_healthAreaParticleProps.sizeVariation = 0.2f, m_healthAreaParticleProps.sizeEnd = 0.0f;
+		m_healthAreaParticleProps.lifeTime = 6.0f;
+		m_healthAreaParticleProps.velocity = glm::vec3(0.0f, 5.0f, 0.0f);
+		m_healthAreaParticleProps.velocityVariation = glm::vec3(20.0f, 2.0f, 20.0f);
+		m_healthAreaParticleProps.position = glm::vec3(30, -5, -30);
 	}
 
 	{
@@ -288,7 +297,9 @@ void Application::OnUpdate()
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
 		m_topDownCam->FollowPlayer(m_player);
-		
+		// health
+		IncreasePlayerHealth(m_spotLights[0]->getPosition(), m_spotLights[0]->getDirection(), m_spotLights[0]->getOuterCutoff());
+
 		if (m_trailerPlaying)
 		{
 			glm::vec3 curve1[4];
@@ -844,6 +855,29 @@ void Application::ProcessContinousInput()
 	}
 }
 
+void Application::IncreasePlayerHealth(const glm::vec3& spotPos, const glm::vec3& spotDir, float cutoffAngle)
+{
+	// check if player is in the spot light
+	float p = glm::dot(spotDir, glm::normalize(m_player->GetPosition() - spotPos));
+	float t = glm::cos(cutoffAngle);
+	if ( p > t)
+	{
+		m_player->health += 1;
+		//if (m_player->health > 100.0f)
+		//{
+		//	m_player->health = 100.0f;
+		//}
+	}
+}
+
+void Application::EmitHealthAreaParticle()
+{
+	for (uint32_t i = 0; i < 10; i++)
+	{
+		m_particleSystem->Emit(m_healthAreaParticleProps);
+	}
+}
+
 void Application::change2XToonShader() {
 	if (m_player->abilityTimer <= 0) {
 		m_player->is_abilityOn = true;
@@ -868,9 +902,9 @@ void Application::onKeyPressed(int key, int mods)
 			break;
 		case GLFW_KEY_Q:
 			// emit particles
-			for (uint32_t i = 0; i < 5; i++)
+			for (uint32_t i = 0; i < 10; i++)
 			{
-				m_particleSystem->Emit(m_particleProps);
+				m_particleSystem->Emit(m_healthAreaParticleProps);
 			}
 			break;
 		case GLFW_KEY_F2:

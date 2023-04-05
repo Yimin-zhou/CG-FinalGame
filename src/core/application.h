@@ -62,6 +62,9 @@ public:
 	void PostProcssing();
 	void ProcessContinousInput();
 
+	void IncreasePlayerHealth(const glm::vec3& spotPos, const glm::vec3& spotDir, float cutoffAngle);
+	void EmitHealthAreaParticle();
+
 
 	void onKeyPressed(int key, int mods);
 	void onKeyReleased(int key, int mods);
@@ -125,6 +128,7 @@ private:
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
 	ParticleProps m_particleProps;
+	ParticleProps m_healthAreaParticleProps;
 
 	bool is_topDown = false;
 
