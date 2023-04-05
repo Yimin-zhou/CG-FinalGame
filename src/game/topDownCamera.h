@@ -15,7 +15,6 @@ public:
 	
 	void Zoom(float offset);
 	glm::mat4 GetViewMatrix();
-	glm::mat4 GetPerspectiveMatrix(Window& window);
 
     // Update the camera's position and orientation based on the player's position for the top-down angle
     void FollowPlayer(std::shared_ptr<Player> player);
@@ -28,7 +27,7 @@ public:
 	float GetYaw();
 	float GetPitch();
 
-	glm::mat4 GetOthoProjMatrix();
+	glm::mat4 GetOrthoMatrix(Window& window);
 	glm::mat4 GetOthoViewMatrix();
 
 private:

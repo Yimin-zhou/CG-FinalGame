@@ -244,7 +244,7 @@ void main()
 
 
     // indirect
-    vec3 ambient = vec3(0.1) * albedo * ao; // TODO
+    vec3 ambient = vec3(0.3) * albedo * ao; // TODO
 
     // IBL (image based lighting)
 //    vec3 R = reflect(-V, N);

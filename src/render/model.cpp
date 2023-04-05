@@ -74,6 +74,13 @@ void Model::Render(std::shared_ptr<DirectionalLight> dirLight,
 	mesh.draw();
 }
 
+void Model::RnderUI(int health)
+{
+	material->SetUniform("health", health);
+
+	mesh.draw();
+}
+
 Model::Model()
 {
 

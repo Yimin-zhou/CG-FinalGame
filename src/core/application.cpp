@@ -3,7 +3,7 @@
 Application::Application()
 	: m_window("Final Project", glm::ivec2(1920, 1080),OpenGLVersion::GL45),
 	m_playerCam(std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, -1.0f))),
-	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 16.0f, 0.0f))),
+	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 10.0f, 3.0f))),
 	is_topDown(false)
 {
 	m_window.registerKeyCallback(
@@ -204,7 +204,8 @@ void Application::Init()
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_player->animatedModel = std::make_shared<AnimatedModel>(playerPbrMaterial, framePaths);
-	m_abilityOnWeapon = std::make_shared<Model>(playerPbrMaterial, "resources/boss/Head.obj");
+	m_abilityOnWeapon = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/player/weapon.obj");
+
 
 	// create enemies
 	InitEnemies(enemyPbrMaterial, 10);
@@ -608,7 +609,7 @@ void Application::MainRender()
 		else 
 		{
 			view = m_topDownCam->GetViewMatrix();
-			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
+			proj = m_topDownCam->GetOrthoMatrix(m_window);
 		}
 
 		// render boss
@@ -788,15 +789,14 @@ void Application::MainRender()
 
 	
 
-#if _DEBUG
-	DebugWindows();
-#else
-	ImGui::Begin("Debug Info");
-	ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
-	// frame time in ms
-	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
+//#if _DEBUG
+//	DebugWindows();
+//#else
+//#endif
+
+	ImGui::Begin("Health");
+	ImGui::Text("Health: %d", m_player->GetHealth());
 	ImGui::End();
-#endif
 
 }
 
@@ -870,10 +870,10 @@ void Application::IncreasePlayerHealth(const glm::vec3& spotPos, const glm::vec3
 	if ( p > t)
 	{
 		m_player->health += 1;
-		//if (m_player->health > 100.0f)
-		//{
-		//	m_player->health = 100.0f;
-		//}
+		if (m_player->health > 100.0f)
+		{
+			m_player->health = 100.0f;
+		}
 	}
 }
 
