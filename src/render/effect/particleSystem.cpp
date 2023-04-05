@@ -87,8 +87,8 @@ void ParticleSystem::Render()
 		float size = glm::mix(particle.sizeEnd, particle.sizeBegin, life);
 
 		// Render
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { particle.position.x, particle.position.y, 0.0f })
-			* glm::rotate(glm::mat4(1.0f), particle.rotation, { 0.0f, 0.0f, 1.0f })
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { particle.position.x, particle.position.y, particle.position.z })
+			* glm::rotate(glm::mat4(1.0f), particle.rotation, { 0.0f, 1.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size, size, 1.0f });
 		m_shader.SetUniform("model", transform);
 		m_shader.SetUniform("particalColor", color);
@@ -111,7 +111,7 @@ void ParticleSystem::Emit(const ParticleProps& particleProps)
 	particle.velocity = particleProps.velocity;
 	particle.velocity.x += particleProps.velocityVariation.x * (Random::Float() - 0.5f);
 	particle.velocity.y += particleProps.velocityVariation.y * (Random::Float() - 0.5f);
-	particle.velocity.z += particleProps.velocityVariation.y * (Random::Float() - 0.5f);
+	particle.velocity.z += particleProps.velocityVariation.z * (Random::Float() - 0.5f);
 
 	// Color
 	particle.colorBegin = particleProps.colorBegin;
