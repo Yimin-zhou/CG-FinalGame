@@ -315,7 +315,7 @@ void Application::OnUpdate()
 			}
 			std::vector<BezierCurve> curves = { cameraPath1, cameraPath2 };
 			CompositeBezierCurve cameraPath(curves);
-			float trailerDuration = 9.0f; // Duration of the trailer in seconds	
+			float trailerDuration = 6.0f; // Duration of the trailer in seconds	
 			float elapsedTime = currentTime - m_trailerStartTime; 
 			
 			float t = fmod(currentTime - m_trailerStartTime, trailerDuration) / trailerDuration;
@@ -324,14 +324,10 @@ void Application::OnUpdate()
 			if (elapsedTime >= trailerDuration)
 			{
 				m_trailerPlaying = false;
-				m_trailerBossPlaying = true;
-				m_trailerStartTime = currentTime;
 			}
 		}
-		else
+		else if (m_trailerBossPlaying && m_bosses.size() > 0)
 		{
-			if (m_trailerBossPlaying)
-			{
 				// Move at cosntant speed along Bézier curve
 				glm::vec3 bezierCurve[4];
 				
@@ -344,7 +340,7 @@ void Application::OnUpdate()
 				int numSamples = 1500;
 				std::vector<float> arcLengthTable = cameraPath.generateArcLengthTable(numSamples);
 
-				float trailerDuration = 8.0f; // Duration of the trailer in seconds
+				float trailerDuration = 6.0f; // Duration of the trailer in seconds
 				float elapsedTime = currentTime - m_trailerStartTime;
 
 				// Move at constant speed along Bézier curve
@@ -356,10 +352,9 @@ void Application::OnUpdate()
 				{
 					m_trailerBossPlaying = false;
 				}
-			}
-			else {
-				m_playerCam->FollowPlayer(m_player);
-			}
+		}
+		else {
+			m_playerCam->FollowPlayer(m_player);
 		}
 
 		if (!m_trailerBossPlaying && !m_trailerPlaying)
@@ -865,6 +860,24 @@ void Application::onKeyPressed(int key, int mods)
 			glfwSetWindowShouldClose(m_window.getWindowHandle(), true);
 		case GLFW_KEY_F1:
 			m_window.setMouseCapture(false);
+			break;
+		case GLFW_KEY_T:
+			m_trailerPlaying = !m_trailerPlaying;
+			if (m_trailerBossPlaying)
+			{
+				m_trailerPlaying = true;
+				m_trailerBossPlaying = false;
+			}
+			m_trailerStartTime = static_cast<float>(glfwGetTime());
+			break;
+		case GLFW_KEY_B:
+			m_trailerBossPlaying = !m_trailerBossPlaying;
+			if (m_trailerPlaying)
+			{
+				m_trailerPlaying = false;
+				m_trailerBossPlaying = true;
+			}
+			m_trailerStartTime = static_cast<float>(glfwGetTime());
 			break;
 		case GLFW_KEY_Q:
 			// emit particles
