@@ -88,6 +88,7 @@ private:
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
 	std::shared_ptr<TopDownCamera> m_topDownCam;
+	std::shared_ptr<Model> m_abilityOnWeapon;
 	
 
 	std::vector<std::shared_ptr<Boss>> m_bosses;

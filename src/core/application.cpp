@@ -204,6 +204,7 @@ void Application::Init()
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_player->animatedModel = std::make_shared<AnimatedModel>(playerPbrMaterial, framePaths);
+	m_abilityOnWeapon = std::make_shared<Model>(playerPbrMaterial, "resources/boss/Head.obj");
 
 	// create enemies
 	InitEnemies(enemyPbrMaterial, 10);
@@ -478,9 +479,11 @@ void Application::ShadowRender()
 		m_player->animatedModel->material->Apply();
 		if (!is_topDown) {
 			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 		else {
 			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 
 		// render unique material objects
@@ -681,10 +684,14 @@ void Application::MainRender()
 			if (!is_topDown) 
 			{
 				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+
 			}
 			else 
 			{
 				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+
 			}
 		}
 	
