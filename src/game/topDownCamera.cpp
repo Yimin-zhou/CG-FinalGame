@@ -39,9 +39,14 @@ glm::mat4 TopDownCamera::GetViewMatrix() {
     return glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
-glm::mat4 TopDownCamera::GetPerspectiveMatrix(Window& window) {
-    return glm::perspective(glm::radians(m_zoom), window.getAspectRatio(), m_near, m_far );
+glm::mat4 TopDownCamera::GetOrthoMatrix(Window& window) {
+    float aspectRatio = window.getAspectRatio();
+	float halfWidth = 40.0f;
+	float halfHeight = halfWidth / aspectRatio;
+
+	return glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_near, m_far);
 }
+
 
 void TopDownCamera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
@@ -82,12 +87,6 @@ glm::vec3 TopDownCamera::GetUp()
 glm::vec3 TopDownCamera::GetRight()
 {
     return m_right;
-}
-
-
-glm::mat4 TopDownCamera::GetOthoProjMatrix()
-{
-    return glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 100.0f);
 }
 
 glm::mat4 TopDownCamera::GetOthoViewMatrix()

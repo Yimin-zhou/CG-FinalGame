@@ -24,6 +24,8 @@ public:
 		std::vector<std::shared_ptr<SpotLight>>& spotLights,
 		const glm::vec3& camPos);
 
+	void RnderUI(int health);
+
 	Model(const std::shared_ptr<XMaterial>& mater, const std::filesystem::path filePath);
 
 	Model();

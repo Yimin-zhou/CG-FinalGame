@@ -62,6 +62,9 @@ public:
 	void PostProcssing();
 	void ProcessContinousInput();
 
+	void IncreasePlayerHealth(const glm::vec3& spotPos, const glm::vec3& spotDir, float cutoffAngle);
+	void EmitHealthAreaParticle();
+
 
 	void onKeyPressed(int key, int mods);
 	void onKeyReleased(int key, int mods);
@@ -85,6 +88,7 @@ private:
 	std::shared_ptr<Player> m_player;
 	std::shared_ptr<Camera> m_playerCam;
 	std::shared_ptr<TopDownCamera> m_topDownCam;
+	std::shared_ptr<Model> m_abilityOnWeapon;
 	
 
 	std::vector<std::shared_ptr<Boss>> m_bosses;
@@ -125,6 +129,7 @@ private:
 	// particle
 	std::shared_ptr<ParticleSystem> m_particleSystem;
 	ParticleProps m_particleProps;
+	ParticleProps m_healthAreaParticleProps;
 
 	bool is_topDown = false;
 

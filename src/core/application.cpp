@@ -3,7 +3,7 @@
 Application::Application()
 	: m_window("Final Project", glm::ivec2(1920, 1080),OpenGLVersion::GL45),
 	m_playerCam(std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, -1.0f))),
-	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 16.0f, 0.0f))),
+	m_topDownCam(std::make_shared<TopDownCamera>(glm::vec3(0.0f, 10.0f, 3.0f))),
 	is_topDown(false)
 {
 	m_window.registerKeyCallback(
@@ -112,16 +112,16 @@ void Application::InitLight()
 	m_pointLights.push_back(pointLight_4);
 
 	// spot light
-	std::shared_ptr<SpotLight> spotLight_1 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, -20.0f),
+	std::shared_ptr<SpotLight> spotLight_1 = std::make_shared<SpotLight>(glm::vec3(30.0f, 15.0f, -30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.5f, 0.4f, 0.9f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_2 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, 20.0f),
+	std::shared_ptr<SpotLight> spotLight_2 = std::make_shared<SpotLight>(glm::vec3(-30.0f, 15.0f, 30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.95f, 0.2f, 0.2f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_3 = std::make_shared<SpotLight>(glm::vec3(-20.0f, 15.0f, -20.0f),
+	std::shared_ptr<SpotLight> spotLight_3 = std::make_shared<SpotLight>(glm::vec3(-30.0f, 15.0f, -30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.3f, 0.8f, 0.8f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
-	std::shared_ptr<SpotLight> spotLight_4 = std::make_shared<SpotLight>(glm::vec3(20.0f, 15.0f, 20.0f),
+	std::shared_ptr<SpotLight> spotLight_4 = std::make_shared<SpotLight>(glm::vec3(30.0f, 15.0f, 30.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.8f, 0.9f, 0.2f), 100.0f, 1.0f, 0.09f, 0.032f,
 		glm::cos(glm::radians(30.0f)), glm::cos(glm::radians(45.0f)));
 	m_spotLights.push_back(spotLight_1);
@@ -204,6 +204,8 @@ void Application::Init()
 	// init animated model
 	const std::vector<std::string> framePaths = loadFramePaths("resources/animatedModels");
 	m_player->animatedModel = std::make_shared<AnimatedModel>(playerPbrMaterial, framePaths);
+	m_abilityOnWeapon = std::make_shared<Model>(InitMaterial(m_mainShader), "resources/player/weapon.obj");
+
 
 	// create enemies
 	InitEnemies(enemyPbrMaterial, 10);
@@ -245,6 +247,15 @@ void Application::Init()
 		m_particleProps.velocity = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_particleProps.velocityVariation = glm::vec3(2.0f, 2.0f, 2.0f);
 		m_particleProps.position = glm::vec3(10.0f, 1.0f, 10.0f);
+
+		// health area particle
+		m_healthAreaParticleProps.colorBegin = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
+		m_healthAreaParticleProps.colorEnd = glm::vec4(0.1f, 0.9f, 0.9f, 0.0f);
+		m_healthAreaParticleProps.sizeBegin = 0.4f, m_healthAreaParticleProps.sizeVariation = 0.2f, m_healthAreaParticleProps.sizeEnd = 0.0f;
+		m_healthAreaParticleProps.lifeTime = 6.0f;
+		m_healthAreaParticleProps.velocity = glm::vec3(0.0f, 5.0f, 0.0f);
+		m_healthAreaParticleProps.velocityVariation = glm::vec3(20.0f, 2.0f, 20.0f);
+		m_healthAreaParticleProps.position = glm::vec3(30, -5, -30);
 	}
 
 	{
@@ -288,7 +299,9 @@ void Application::OnUpdate()
 		// Update the camera's position and orientation based on the player's position
 		m_player->Update(deltaTime);
 		m_topDownCam->FollowPlayer(m_player);
-		
+		// health
+		IncreasePlayerHealth(m_spotLights[0]->getPosition(), m_spotLights[0]->getDirection(), m_spotLights[0]->getOuterCutoff());
+
 		if (m_trailerPlaying)
 		{
 			glm::vec3 curve1[4];
@@ -462,9 +475,11 @@ void Application::ShadowRender()
 		m_player->animatedModel->material->Apply();
 		if (!is_topDown) {
 			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+			if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 		else {
 			m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+			if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
 		}
 
 		// render unique material objects
@@ -589,7 +604,7 @@ void Application::MainRender()
 		else 
 		{
 			view = m_topDownCam->GetViewMatrix();
-			proj = m_topDownCam->GetPerspectiveMatrix(m_window);
+			proj = m_topDownCam->GetOrthoMatrix(m_window);
 		}
 
 		// render boss
@@ -665,10 +680,14 @@ void Application::MainRender()
 			if (!is_topDown) 
 			{
 				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+				if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+
 			}
 			else 
 			{
 				m_player->animatedModel->Render(m_directionalLight, m_pointLights, m_spotLights, m_topDownCam->GetPosition());
+				if (m_player->is_abilityOn) m_abilityOnWeapon->Render(m_directionalLight, m_pointLights, m_spotLights, m_playerCam->GetPosition());
+
 			}
 		}
 	
@@ -765,15 +784,14 @@ void Application::MainRender()
 
 	
 
-#if _DEBUG
-	DebugWindows();
-#else
-	ImGui::Begin("Debug Info");
-	ImGui::Text("FPS: %.0f", ImGui::GetIO().Framerate);
-	// frame time in ms
-	ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
+//#if _DEBUG
+//	DebugWindows();
+//#else
+//#endif
+
+	ImGui::Begin("Health");
+	ImGui::Text("Health: %d", m_player->GetHealth());
 	ImGui::End();
-#endif
 
 }
 
@@ -839,6 +857,29 @@ void Application::ProcessContinousInput()
 	}
 }
 
+void Application::IncreasePlayerHealth(const glm::vec3& spotPos, const glm::vec3& spotDir, float cutoffAngle)
+{
+	// check if player is in the spot light
+	float p = glm::dot(spotDir, glm::normalize(m_player->GetPosition() - spotPos));
+	float t = glm::cos(cutoffAngle);
+	if ( p > t)
+	{
+		m_player->health += 1;
+		if (m_player->health > 100.0f)
+		{
+			m_player->health = 100.0f;
+		}
+	}
+}
+
+void Application::EmitHealthAreaParticle()
+{
+	for (uint32_t i = 0; i < 10; i++)
+	{
+		m_particleSystem->Emit(m_healthAreaParticleProps);
+	}
+}
+
 void Application::change2XToonShader() {
 	if (m_player->abilityTimer <= 0) {
 		m_player->is_abilityOn = true;
@@ -881,9 +922,9 @@ void Application::onKeyPressed(int key, int mods)
 			break;
 		case GLFW_KEY_Q:
 			// emit particles
-			for (uint32_t i = 0; i < 5; i++)
+			for (uint32_t i = 0; i < 10; i++)
 			{
-				m_particleSystem->Emit(m_particleProps);
+				m_particleSystem->Emit(m_healthAreaParticleProps);
 			}
 			break;
 		case GLFW_KEY_F2:
